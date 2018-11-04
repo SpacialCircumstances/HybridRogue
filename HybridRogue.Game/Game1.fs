@@ -3,6 +3,7 @@
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
 open State
+open Graphics
 
 type Game1() as this = 
     inherit Microsoft.Xna.Framework.Game()
@@ -10,6 +11,7 @@ type Game1() as this =
     let mutable spriteBatch = Unchecked.defaultof<SpriteBatch>
     let graphics = new GraphicsDeviceManager(this)
     let mutable state = Unchecked.defaultof<GameState>
+    let mutable graphicsState = Unchecked.defaultof<GraphicsState>
 
     override this.Initialize() =
         do this.Window.Title <- "Hybrid Rogue"
@@ -20,9 +22,12 @@ type Game1() as this =
 
     override this.LoadContent() =
         do spriteBatch <- new SpriteBatch(graphics.GraphicsDevice)
+        let font = this.Content.Load<SpriteFont>("fonts/Square")
+        do graphicsState <- createGraphicsState spriteBatch font
     
     override this.Update(time: GameTime) =
         do state <- updateState state
     
     override this.Draw(time: GameTime) =
         graphics.GraphicsDevice.Clear Color.CornflowerBlue
+        drawState state graphicsState
