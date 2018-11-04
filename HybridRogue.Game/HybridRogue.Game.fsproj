@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="State.fs" />
     <Compile Include="Game1.fs" />
   </ItemGroup>
   <ItemGroup>
