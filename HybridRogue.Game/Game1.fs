@@ -11,16 +11,15 @@ type Game1() as this =
     let graphics = new GraphicsDeviceManager(this)
     do graphics.PreferredBackBufferHeight <- 600
     do graphics.PreferredBackBufferWidth <- 800
-    let device = graphics.GraphicsDevice
 
     override this.Initialize() =
         ()
 
     override this.LoadContent() =
-        do spriteBatch <- new SpriteBatch(device)
+        do spriteBatch <- new SpriteBatch(graphics.GraphicsDevice)
     
     override this.Update(time: GameTime) =
         ()
     
     override this.Draw(time: GameTime) =
-        device.Clear Color.CornflowerBlue
+        graphics.GraphicsDevice.Clear Color.CornflowerBlue

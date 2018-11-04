@@ -13,7 +13,7 @@ namespace HybridRogue.Desktop
         [STAThread]
         static void Main()
         {
-            using (var game = new Game1())
+            using (var game = new HybridRogue.Game.Game1())
                 game.Run();
         }
     }
