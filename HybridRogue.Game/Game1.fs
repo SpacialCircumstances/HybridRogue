@@ -6,14 +6,14 @@ open Microsoft.Xna.Framework.Graphics
 type Game1() as this = 
     inherit Microsoft.Xna.Framework.Game()
     do this.Content.RootDirectory <- "Content"
-    do this.Window.Title <- "Hybrid Rogue"
     let mutable spriteBatch = Unchecked.defaultof<SpriteBatch>
     let graphics = new GraphicsDeviceManager(this)
-    do graphics.PreferredBackBufferHeight <- 600
-    do graphics.PreferredBackBufferWidth <- 800
 
     override this.Initialize() =
-        ()
+        do this.Window.Title <- "Hybrid Rogue"
+        do graphics.PreferredBackBufferHeight <- 600
+        do graphics.PreferredBackBufferWidth <- 800
+        do graphics.ApplyChanges ()
 
     override this.LoadContent() =
         do spriteBatch <- new SpriteBatch(graphics.GraphicsDevice)
