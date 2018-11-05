@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser.FSharp" Version="2.2.1" />
-    <PackageReference Include="SharpFontCore" Version="0.1.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0005" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0005" />
   </ItemGroup>
 
 </Project>

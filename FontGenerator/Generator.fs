@@ -1,10 +1,10 @@
 ﻿module Generator
 
 open Color
-open SharpFont
 open System.IO
 open System.Collections.Generic
 open SixLabors.Primitives
+open SixLabors.Fonts
 
 type GeneratorSettings = {
     fontFileName: string;
@@ -18,12 +18,9 @@ let bitmapMaxWidth = 1024
 let lowerChar = 33
 let upperChar = 127
 
-let glyphSize (font: FontFace) (character: char) (size: int) =
-    let glyph = font.GetGlyph(CodePoint(character), float32(size))
-    (glyph.RenderWidth, glyph.RenderHeight)
-
 let generate (settings: GeneratorSettings): Result<string, string> =
-    let font = FontFace(File.OpenRead(settings.fontFileName))
+    let fontCollection = FontCollection()
+    let font = fontCollection.Install(File.OpenRead(settings.fontFileName))
     
     let mutable bitmapWidth = 0
     let mutable bitmapHeight = 0
@@ -38,8 +35,6 @@ let generate (settings: GeneratorSettings): Result<string, string> =
             bitmapWidth <- 64
             bitmapHeight <- bitmapHeight + 64
         else
-            bitmapWidth <- newWidth
-
-    
+            bitmapWidth <- newWidth    
 
     Error("Not Implemented")
