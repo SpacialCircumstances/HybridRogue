@@ -36,7 +36,13 @@ let main argv =
         | :? Parsed<CommandLineOptions> as parsed -> 
             match createGeneratorSettings parsed.Value with
                 | Some settings ->
-                    0
+                    match generate settings with
+                        | Error e ->
+                            Console.WriteLine(e)
+                            1
+                        | Ok ok ->
+                            Console.WriteLine(ok)
+                            0
                 | None -> 1
         | :? NotParsed<CommandLineOptions> as notParsed -> 1
         | _ -> 2
