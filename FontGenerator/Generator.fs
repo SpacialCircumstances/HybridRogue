@@ -28,6 +28,9 @@ let generate (settings: GeneratorSettings): Result<string, string> =
         let fontFamily = fontCollection.Install(File.OpenRead(settings.fontFileName))
         let font = fontFamily.CreateFont(float32(settings.fontSize))
 
+        let foregroundColor = toRgba32 settings.foregroundColor
+        let backgroundColor = toRgba32 settings.backgroundColor
+
         let mutable bitmapWidth = 0
         let mutable bitmapHeight = 0
 
@@ -45,6 +48,8 @@ let generate (settings: GeneratorSettings): Result<string, string> =
             
         let image = new Image<Rgba32>(bitmapMaxWidth, bitmapHeight + tileSize)
 
+        do image.Mutate(fun ctx -> ctx.Fill(backgroundColor) |> ignore)
+
         let mutable errors = List.empty<string>
 
         for entry in glyphs do
@@ -52,7 +57,7 @@ let generate (settings: GeneratorSettings): Result<string, string> =
             let pos = entry.Value
             do image.Mutate(fun ctx -> 
                 try
-                    ctx.DrawText(character, font, Pen(Rgba32.White, 1.0f), pos) |> ignore
+                    ctx.DrawText(character, font, foregroundColor, pos) |> ignore
                 with
                     | :? ImageProcessingException -> 
                         do errors <- (sprintf "Warning: Problem drawing character %s: Most likely, the font does not contain this character" character) :: errors

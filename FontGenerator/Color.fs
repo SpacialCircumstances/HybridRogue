@@ -1,6 +1,7 @@
 ﻿module Color
 
 open System.Text.RegularExpressions
+open SixLabors.ImageSharp.PixelFormats
 
 type RgbColor = { r: byte; g: byte; b: byte }
 
@@ -17,3 +18,6 @@ let parseColor (colorString: string): RgbColor option =
             Some(color)
         | false ->
             None
+
+let toRgba32 color =
+    Rgba32(color.r, color.g, color.b)
