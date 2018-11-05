@@ -42,6 +42,7 @@ let main argv =
                             1
                         | Ok ok ->
                             Console.WriteLine(ok)
+                            printfn "Creating font successful. Font bitmap written to %s" (Path.GetFullPath(settings.outFileName))
                             0
                 | Error err -> 
                     printfn "Invalid generator settings: %s" err
