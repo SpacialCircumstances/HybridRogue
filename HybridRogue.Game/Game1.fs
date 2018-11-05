@@ -14,6 +14,7 @@ type Game1() as this =
     let mutable graphicsState = Unchecked.defaultof<GraphicsState>
 
     override this.Initialize() =
+        base.Initialize()
         do this.Window.Title <- "Hybrid Rogue"
         do graphics.PreferredBackBufferHeight <- 600
         do graphics.PreferredBackBufferWidth <- 800
@@ -21,6 +22,7 @@ type Game1() as this =
         do state <- initialGameState
 
     override this.LoadContent() =
+        base.LoadContent()
         do spriteBatch <- new SpriteBatch(graphics.GraphicsDevice)
         let font = this.Content.Load<SpriteFont>("fonts/Square")
         do graphicsState <- createGraphicsState spriteBatch font
@@ -29,5 +31,5 @@ type Game1() as this =
         do state <- updateState state
     
     override this.Draw(time: GameTime) =
-        graphics.GraphicsDevice.Clear Color.CornflowerBlue
+        graphics.GraphicsDevice.Clear Color.Black
         drawState state graphicsState
