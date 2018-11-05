@@ -15,7 +15,7 @@ type CommandLineOptions = {
     [<Option("fg", Default = "(255, 255, 255)", HelpText = "Foreground Color")>] foregroundColor: string
 }
 
-let createGeneratorSettings (cliOptions: CommandLineOptions): GeneratorSettings option =
+let createGeneratorSettings (cliOptions: CommandLineOptions): Result<GeneratorSettings, string> =
     let bgColor = parseColor cliOptions.backgroundColor
     match bgColor with
         | Some bgColor ->
@@ -24,10 +24,10 @@ let createGeneratorSettings (cliOptions: CommandLineOptions): GeneratorSettings 
                 | Some fgColor ->
                     if File.Exists(cliOptions.fontFile) then
                         let settings = { fontFileName = cliOptions.fontFile; outFileName = cliOptions.outputFileName; fontSize = cliOptions.fontSize; backgroundColor = bgColor; foregroundColor = fgColor }
-                        Some(settings)
-                    else None
-                | None -> None
-        | None -> None
+                        Ok(settings)
+                    else Result.Error(sprintf "Error: File %s does not exist" cliOptions.fontFile)
+                | None -> Result.Error(sprintf "Error: Could not parse foreground color: %s" cliOptions.foregroundColor)
+        | None -> Result.Error(sprintf "Error: Could not parse background color: %s" cliOptions.backgroundColor)
 
 [<EntryPoint>]
 let main argv =
@@ -35,7 +35,7 @@ let main argv =
     match result with
         | :? Parsed<CommandLineOptions> as parsed -> 
             match createGeneratorSettings parsed.Value with
-                | Some settings ->
+                | Ok settings ->
                     match generate settings with
                         | Error e ->
                             Console.WriteLine(e)
@@ -43,6 +43,10 @@ let main argv =
                         | Ok ok ->
                             Console.WriteLine(ok)
                             0
-                | None -> 1
-        | :? NotParsed<CommandLineOptions> as notParsed -> 1
+                | Error err -> 
+                    printfn "Invalid generator settings: %s" err
+                    1
+        | :? NotParsed<CommandLineOptions> as notParsed -> 
+            printfn "Could not parse command line options, aborting."
+            1
         | _ -> 2
