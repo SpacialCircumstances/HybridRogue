@@ -12,7 +12,9 @@ type CommandLineOptions = {
     [<Option("size", HelpText = "Font size", Default = 64)>] fontSize: int;
     [<Option("out", Required = true, HelpText = "Image file output name")>] outputFileName: string;
     [<Option("bg", Default = "(0,0,0)", HelpText = "Background Color")>] backgroundColor: string;
-    [<Option("fg", Default = "(255, 255, 255)", HelpText = "Foreground Color")>] foregroundColor: string
+    [<Option("fg", Default = "(255, 255, 255)", HelpText = "Foreground Color")>] foregroundColor: string;
+    [<Option("lower", Default = 33, HelpText = "Lower character (UTF-16) for font generation")>] lowerChar: int;
+    [<Option("upper", Default = 126, HelpText = "Upper character (UTF-16) for font generation")>] upperChar: int
 }
 
 let createGeneratorSettings (cliOptions: CommandLineOptions): Result<GeneratorSettings, string> =
@@ -23,8 +25,11 @@ let createGeneratorSettings (cliOptions: CommandLineOptions): Result<GeneratorSe
             match fgColor with
                 | Some fgColor ->
                     if File.Exists(cliOptions.fontFile) then
-                        let settings = { fontFileName = cliOptions.fontFile; outFileName = cliOptions.outputFileName; fontSize = cliOptions.fontSize; backgroundColor = bgColor; foregroundColor = fgColor }
-                        Ok(settings)
+                        if cliOptions.upperChar > cliOptions.lowerChar then
+                            let settings = { fontFileName = cliOptions.fontFile; outFileName = cliOptions.outputFileName; fontSize = cliOptions.fontSize; backgroundColor = bgColor; foregroundColor = fgColor; upperChar = cliOptions.upperChar; lowerChar = cliOptions.lowerChar }
+                            Ok(settings)
+                        else
+                            Result.Error("The upper char must be bigger than the lower char")
                     else Result.Error(sprintf "Error: File %s does not exist" cliOptions.fontFile)
                 | None -> Result.Error(sprintf "Error: Could not parse foreground color: %s" cliOptions.foregroundColor)
         | None -> Result.Error(sprintf "Error: Could not parse background color: %s" cliOptions.backgroundColor)

@@ -14,16 +14,18 @@ type GeneratorSettings = {
     outFileName: string;
     fontSize: int;
     backgroundColor: RgbColor;
-    foregroundColor: RgbColor
+    foregroundColor: RgbColor;
+    lowerChar: int;
+    upperChar: int
 }
 
 let tileSize = 64
 let bitmapMaxWidth = tileSize * 16
-let lowerChar = 33
-let upperChar = 126 //We do not want the DEL character
 
 let generate (settings: GeneratorSettings): Result<string, string> =
     try 
+        let lowerChar = settings.lowerChar
+        let upperChar = settings.upperChar
         let fontCollection = FontCollection()
         let fontFamily = fontCollection.Install(File.OpenRead(settings.fontFileName))
         let font = fontFamily.CreateFont(float32(settings.fontSize))
