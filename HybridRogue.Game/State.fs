@@ -3,9 +3,13 @@
 open HybridRogue.Game.Graphics
 open Microsoft.Xna.Framework
 
-type GameState = { level: int }
+type LevelState = { level: int }
 
-let initialGameState = { level = 1 }
+type GameState = 
+        | MenuState
+        | LevelState of LevelState
+
+let initialGameState = LevelState({ level = 1 })
 
 let updateState (state: GameState) =
     state
@@ -13,6 +17,10 @@ let updateState (state: GameState) =
 let drawState (state: GameState) (graphics: GraphicsState) =
     let batch = graphics.batch
     batch.Begin()
-    batch.DrawString(graphics.font, (sprintf "Level %i" state.level), Vector2(0.0f, 0.0f), Color.White)
+    match state with
+        | MenuState ->
+            ()
+        | LevelState state ->
+            batch.DrawString(graphics.font, (sprintf "Level %i" state.level), Vector2(0.0f, 0.0f), Color.White)
     batch.End()
     ()
