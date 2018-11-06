@@ -12,6 +12,7 @@ type Game1() as this =
     let graphics = new GraphicsDeviceManager(this)
     let mutable state = Unchecked.defaultof<GameState>
     let mutable graphicsState = Unchecked.defaultof<GraphicsState>
+    do this.IsMouseVisible <- true
 
     override this.Initialize() =
         base.Initialize()
