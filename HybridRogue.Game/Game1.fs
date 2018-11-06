@@ -25,8 +25,7 @@ type Game1() as this =
     override this.LoadContent() =
         base.LoadContent()
         do spriteBatch <- new SpriteBatch(graphics.GraphicsDevice)
-        let font = this.Content.Load<SpriteFont>("fonts/Square")
-        do graphicsState <- createGraphicsState spriteBatch font
+        do graphicsState <- loadGraphics spriteBatch this.Content
     
     override this.Update(time: GameTime) =
         do state <- updateState state
