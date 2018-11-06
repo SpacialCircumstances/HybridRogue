@@ -14,7 +14,8 @@ type CommandLineOptions = {
     [<Option("bg", Default = "(0,0,0)", HelpText = "Background Color")>] backgroundColor: string;
     [<Option("fg", Default = "(255, 255, 255)", HelpText = "Foreground Color")>] foregroundColor: string;
     [<Option("lower", Default = 33, HelpText = "Lower character (UTF-16) for font generation")>] lowerChar: int;
-    [<Option("upper", Default = 126, HelpText = "Upper character (UTF-16) for font generation")>] upperChar: int
+    [<Option("upper", Default = 126, HelpText = "Upper character (UTF-16) for font generation")>] upperChar: int;
+    [<Option("tileSize", Default = 64, HelpText = "Size of the character tiles")>] tileSize: int
 }
 
 let createGeneratorSettings (cliOptions: CommandLineOptions): Result<GeneratorSettings, string> =
@@ -26,7 +27,7 @@ let createGeneratorSettings (cliOptions: CommandLineOptions): Result<GeneratorSe
                 | Some fgColor ->
                     if File.Exists(cliOptions.fontFile) then
                         if cliOptions.upperChar > cliOptions.lowerChar then
-                            let settings = { fontFileName = cliOptions.fontFile; outFileName = cliOptions.outputFileName; fontSize = cliOptions.fontSize; backgroundColor = bgColor; foregroundColor = fgColor; upperChar = cliOptions.upperChar; lowerChar = cliOptions.lowerChar }
+                            let settings = { fontFileName = cliOptions.fontFile; outFileName = cliOptions.outputFileName; fontSize = cliOptions.fontSize; backgroundColor = bgColor; foregroundColor = fgColor; upperChar = cliOptions.upperChar; lowerChar = cliOptions.lowerChar; tileSize = cliOptions.tileSize }
                             Ok(settings)
                         else
                             Result.Error("The upper char must be bigger than the lower char")

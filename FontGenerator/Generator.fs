@@ -16,14 +16,14 @@ type GeneratorSettings = {
     backgroundColor: RgbColor;
     foregroundColor: RgbColor;
     lowerChar: int;
-    upperChar: int
+    upperChar: int;
+    tileSize: int
 }
-
-let tileSize = 64
-let bitmapMaxWidth = tileSize * 16
 
 let generate (settings: GeneratorSettings): Result<string, string> =
     try 
+        let tileSize = settings.tileSize
+        let bitmapMaxWidth = tileSize * 16
         let lowerChar = settings.lowerChar
         let upperChar = settings.upperChar
         let fontCollection = FontCollection()
