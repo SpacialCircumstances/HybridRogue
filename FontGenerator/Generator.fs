@@ -57,9 +57,18 @@ let generate (settings: GeneratorSettings): Result<string, string> =
         for entry in glyphs do
             let character = string(entry.Key)
             let pos = entry.Value
+            let size = TextMeasurer.Measure(character, RendererOptions(font, pos))
+            let newPos = if size.Width > float32(tileSize) || size.Height > float32(tileSize) then
+                                do errors <- (sprintf "Warning: Character %s with size (%f, %f) exceeds tile size %i" character size.Width size.Height tileSize) :: errors
+                                pos
+                            else
+                                let tileSize = float32(tileSize)
+                                let ow = (tileSize - size.Width) / 2.0f
+                                let oh = (tileSize - size.Height) / 2.0f
+                                PointF(pos.X + ow, pos.Y + oh)
             do image.Mutate(fun ctx -> 
                 try
-                    ctx.DrawText(character, font, foregroundColor, pos) |> ignore
+                    ctx.DrawText(character, font, foregroundColor, newPos) |> ignore
                 with
                     | :? ImageProcessingException -> 
                         do errors <- (sprintf "Warning: Problem drawing character %s: Most likely, the font does not contain this character" character) :: errors
