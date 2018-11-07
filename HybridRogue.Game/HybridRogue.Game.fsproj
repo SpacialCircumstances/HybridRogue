@@ -43,11 +43,11 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="OperationCombinators.fs" />
     <Compile Include="Graphics.fs" />
+    <Compile Include="Input.fs" />
     <Compile Include="State.fs" />
     <Compile Include="Game1.fs" />
-    <Compile Include="Input.fs" />
-    <Compile Include="OperationCombinators.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

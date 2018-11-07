@@ -3,6 +3,7 @@
 open HybridRogue.Game.Graphics
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
+open Input
 
 type LevelState = { level: int }
 
@@ -12,7 +13,7 @@ type GameState =
 
 let initialGameState = MenuState
 
-let updateState (state: GameState) =
+let updateState (state: GameState) (event: InputEvent option) =
     match state with
         | MenuState ->
             match Keyboard.GetState().IsKeyDown(Keys.Enter) with
