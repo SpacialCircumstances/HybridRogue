@@ -38,6 +38,7 @@ type Game1() as this =
         let keyboardState = Keyboard.GetState()
         let (inputState, event) = updateInput lastInputState (keyboardState.GetPressedKeys()) (Mouse.GetState()) textInputEvent
         do lastInputState <- inputState
+        do textInputEvent <- None
         do state <- updateState state event
     
     override this.Draw(time: GameTime) =
