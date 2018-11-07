@@ -46,6 +46,8 @@
     <Compile Include="Graphics.fs" />
     <Compile Include="State.fs" />
     <Compile Include="Game1.fs" />
+    <Compile Include="Input.fs" />
+    <Compile Include="OperationCombinators.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
