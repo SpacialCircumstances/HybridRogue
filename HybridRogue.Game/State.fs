@@ -16,11 +16,16 @@ let initialGameState = MenuState
 let updateState (state: GameState) (event: InputEvent option) =
     match state with
         | MenuState ->
-            match Keyboard.GetState().IsKeyDown(Keys.Enter) with
-                | true ->
-                    LevelState({ level = 1})
-                | false ->
-                    state
+            match event with
+                | None -> state
+                | Some event ->
+                    match event with
+                        | Released key ->
+                            if key = Keys.Enter then
+                                LevelState({ level = 1 })
+                            else
+                                state
+                        | _ -> state
         | LevelState levelState ->
             state
 
