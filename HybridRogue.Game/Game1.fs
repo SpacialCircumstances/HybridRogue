@@ -5,6 +5,7 @@ open Microsoft.Xna.Framework.Graphics
 open State
 open Graphics
 open Input
+open System
 
 type Game1() as this = 
     inherit Microsoft.Xna.Framework.Game()
@@ -14,7 +15,11 @@ type Game1() as this =
     let mutable state = Unchecked.defaultof<GameState>
     let mutable graphicsState = Unchecked.defaultof<GraphicsState>
     let mutable lastInputState = emptyInputState
+    let mutable textInputEvent = None
     do this.IsMouseVisible <- true
+    do this.Window.TextInput.AddHandler(EventHandler<TextInputEventArgs>(fun sender args -> 
+        do textInputEvent <- Some({ character = Some(args.Character); key = args.Key })
+    ))
 
     override this.Initialize() =
         base.Initialize()
@@ -31,7 +36,7 @@ type Game1() as this =
     
     override this.Update(time: GameTime) =
         let keyboardState = Keyboard.GetState()
-        let (inputState, event) = updateInput lastInputState (keyboardState.GetPressedKeys()) (Mouse.GetState()) []
+        let (inputState, event) = updateInput lastInputState (keyboardState.GetPressedKeys()) (Mouse.GetState()) textInputEvent
         do lastInputState <- inputState
         do state <- updateState state event
     

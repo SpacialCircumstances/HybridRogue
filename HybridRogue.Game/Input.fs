@@ -19,5 +19,5 @@ type InputState = { lastPressedKeys: Keys array; lastMouseState: MouseState }
 
 let emptyInputState = { lastPressedKeys = [||]; lastMouseState = MouseState() }
 
-let updateInput (oldInputState: InputState) (pressedKeys: Keys array) (mouse: MouseState) (texts: TextEvent seq) =
+let updateInput (oldInputState: InputState) (pressedKeys: Keys array) (mouse: MouseState) (texts: TextEvent option) =
     (emptyInputState, None) //TODO
