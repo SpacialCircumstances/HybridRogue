@@ -14,6 +14,7 @@ type GameState =
 let initialGameState = MenuState
 
 let updateState (state: GameState) (event: InputEvent option) =
+    printf "Event %A" event
     match state with
         | MenuState ->
             match Keyboard.GetState().IsKeyDown(Keys.Enter) with

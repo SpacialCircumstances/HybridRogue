@@ -54,5 +54,19 @@ let scrollEvents (oldValue: int) (newValue: int) =
     else
         Some(Scrolled(newValue - oldValue))
 
-let updateInput (oldInputState: InputState) (pressedKeys: Keys array) (mouse: MouseState) (texts: TextEvent option) =
-    (emptyInputState, None) //TODO
+let updateInput (oldInputState: InputState) (pressedKeys: Keys array) (mouse: MouseState) (text: TextEvent option) =
+    let oldMouseState = oldInputState.lastMouseState
+    let event = OperationCombinators.orElse {
+        return! singleMouseEvent oldMouseState.LeftButton mouse.LeftButton Left (mouse.Position.ToVector2())
+        return! singleMouseEvent oldMouseState.RightButton mouse.RightButton Right (mouse.Position.ToVector2())
+        return! singleMouseEvent oldMouseState.MiddleButton mouse.MiddleButton Middle (mouse.Position.ToVector2())
+        return! scrollEvents oldMouseState.ScrollWheelValue mouse.ScrollWheelValue
+        return! match text with
+                    | None -> None
+                    | Some t -> Some(TextInput(t))
+        return! match (keyboardEvents oldInputState.lastPressedKeys pressedKeys) with
+                    | Some events -> Seq.tryHead events
+                    | None -> None
+    }
+    let newInputState = { lastPressedKeys = pressedKeys; lastMouseState = mouse }
+    (newInputState, event)
