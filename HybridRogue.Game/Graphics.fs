@@ -2,8 +2,17 @@
 
 open Microsoft.Xna.Framework.Graphics
 open Microsoft.Xna.Framework.Content
+open Microsoft.Xna.Framework
 
-type GraphicsState = { batch: SpriteBatch; font: SpriteFont; tileset: Texture2D }
+type Tileset = { texture: Texture2D; tileSize: int }
+
+type GraphicsState = { batch: SpriteBatch; font: SpriteFont; tileset: Tileset }
+
+let getTile (tileset: Tileset) (index: int): Texture2D * Rectangle =
+    let tilesInRow = tileset.texture.Width / tileset.tileSize
+    let tileX = tilesInRow % index
+    let tileY = index / tilesInRow
+    (tileset.texture, Rectangle(tileX * tileset.tileSize, tileY * tileset.tileSize, tileset.tileSize, tileset.tileSize))
 
 let loadGraphics (batch: SpriteBatch) (content: ContentManager) =
-    { batch = batch; font = content.Load<SpriteFont>("fonts/Square"); tileset = content.Load<Texture2D>("tilesets/Square") }
+    { batch = batch; font = content.Load<SpriteFont>("fonts/Square"); tileset = { texture = content.Load<Texture2D>("tilesets/Square"); tileSize = 64 } }
