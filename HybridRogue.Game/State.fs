@@ -34,7 +34,7 @@ let updateState (state: GameState) (event: InputEvent option) =
         | LevelState levelState ->
             state
 
-let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
+let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) (player: Player) =
     JumpAndRun.mapIteri (fun x y block ->
         match block with
             | None -> ()
@@ -46,12 +46,16 @@ let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
 
 let drawState (state: GameState) (graphics: GraphicsState) =
     let batch = graphics.batch
-    batch.Begin()
     match state with
         | MenuState ->
+            batch.Begin()
             batch.DrawString(graphics.font, "Press Enter to start a new game", Vector2(0.0f, 300.0f), Color.White)
+            batch.End()
         | LevelState state ->
+            batch.Begin() //Draw level
+            drawMap graphics state.level.map state.player
+            batch.End()
+            batch.Begin() //Draw gui
             batch.DrawString(graphics.font, (sprintf "Level %i" state.player.level), Vector2(0.0f, 0.0f), Color.White)
-            drawMap graphics state.level.map
-    batch.End()
+            batch.End()
     ()
