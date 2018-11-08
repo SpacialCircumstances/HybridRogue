@@ -35,15 +35,14 @@ let updateState (state: GameState) (event: InputEvent option) =
             state
 
 let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
-    let mutable currentX = 0
-    let mutable currentY = 0
-    for block in map.blocks do
+    JumpAndRun.mapIteri (fun x y block ->
         match block with
             | None -> ()
-            | Some b ->
-                let (texture, region) = getTile graphics.tileset b.tileType
-                let (x, y) = b.coordinates
+            | Some block ->
+                let (texture, region) = getTile graphics.tileset block.tileType
+                let (x, y) = block.coordinates
                 graphics.batch.Draw(texture, Rectangle(x * 32, y * 32, 32, 32), System.Nullable(region), Color.White)
+    ) map                
 
 let drawState (state: GameState) (graphics: GraphicsState) =
     let batch = graphics.batch
