@@ -6,13 +6,13 @@ type Block = { tileType: int; coordinates: int * int }
 
 type Map = { size: Point; blocks: Block option seq }
 
-type Level = { map: Map }
+type Level = { map: Map; startingPoint: Vector2 }
 
 let tileSize = 16
 
 let defaultLevel = 
     let blocks = [| for i in 0..25 -> Some({ tileType = (i % 5) + 10; coordinates = (i % 5, i / 5) }) |]
-    { map = { size = Point(5, 5); blocks = blocks }}
+    { map = { size = Point(5, 5); blocks = blocks }; startingPoint = Vector2(0.0f, 300.0f) }
 
 let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
     for i = 0 to (Seq.length map.blocks) - 1 do

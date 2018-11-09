@@ -6,10 +6,11 @@ open Microsoft.Xna.Framework.Input
 open Input
 open Level
 open Camera
+open Microsoft.Xna.Framework.Graphics
 
-type Player = { name: string; level: int }
+type Player = { name: string; level: int; position: Vector2 }
 
-let emptyPlayer = { name = "TestDummy"; level = 1 }
+let emptyPlayer (level: Level.Level) = { name = "TestDummy"; level = 1; position = level.startingPoint }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
@@ -28,14 +29,19 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                     match event with
                         | Released key ->
                             if key = Keys.Enter then
-                                LevelState({ level =  defaultLevel; player = emptyPlayer; camera = createCamera (Vector2(0.0f, 300.0f)) 1.0f })
+                                let level = defaultLevel
+                                LevelState({ level =  level; player = emptyPlayer level; camera = createCamera (Vector2(0.0f, 300.0f)) 1.0f })
                             else
                                 state
                         | _ -> state
         | LevelState levelState ->
             state
 
-let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) (player: Player) =
+let drawPlayer (graphics: GraphicsState) (player: Player) =
+    let (texture, region) = getTile graphics.tileset 6
+    do graphics.batch.Draw(texture, player.position, System.Nullable(region), Color.Blue)
+
+let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
     JumpAndRun.mapIteri (fun x y block ->
         match block with
             | None -> ()
@@ -55,7 +61,8 @@ let drawState (state: GameState) (graphics: GraphicsState) =
         | LevelState state ->
             let transform = calculateTransform state.camera graphics.viewportSize
             batch.Begin(transformMatrix = System.Nullable(transform)) //Draw level
-            drawMap graphics state.level.map state.player
+            drawMap graphics state.level.map
+            drawPlayer graphics state.player
             batch.End()
             batch.Begin() //Draw gui
             batch.DrawString(graphics.font, (sprintf "Level %i" state.player.level), Vector2(0.0f, 0.0f), Color.White)
