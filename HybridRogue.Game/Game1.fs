@@ -32,14 +32,14 @@ type Game1() as this =
     override this.LoadContent() =
         base.LoadContent()
         do spriteBatch <- new SpriteBatch(graphics.GraphicsDevice)
-        do graphicsState <- loadGraphics spriteBatch this.Content
+        do graphicsState <- loadGraphics spriteBatch this.Content (Point(800, 600))
     
     override this.Update(time: GameTime) =
         let keyboardState = Keyboard.GetState()
         let (inputState, event) = updateInput lastInputState (keyboardState.GetPressedKeys()) (Mouse.GetState()) textInputEvent
         do lastInputState <- inputState
         do textInputEvent <- None
-        do state <- updateState state event
+        do state <- updateState state event time
     
     override this.Draw(time: GameTime) =
         graphics.GraphicsDevice.Clear Color.Black

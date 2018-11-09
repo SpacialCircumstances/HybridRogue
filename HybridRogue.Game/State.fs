@@ -5,12 +5,13 @@ open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
 open Input
 open Level
+open Camera
 
 type Player = { name: string; level: int }
 
 let emptyPlayer = { name = "TestDummy"; level = 1 }
 
-type LevelState = { level: Level; player: Player }
+type LevelState = { level: Level; player: Player; camera: Camera }
 
 type GameState = 
         | MenuState
@@ -27,7 +28,7 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                     match event with
                         | Released key ->
                             if key = Keys.Enter then
-                                LevelState({ level =  defaultLevel; player = emptyPlayer })
+                                LevelState({ level =  defaultLevel; player = emptyPlayer; camera = createCamera (Vector2(0.0f, 300.0f)) 1.0f })
                             else
                                 state
                         | _ -> state
@@ -52,7 +53,8 @@ let drawState (state: GameState) (graphics: GraphicsState) =
             batch.DrawString(graphics.font, "Press Enter to start a new game", Vector2(0.0f, 300.0f), Color.White)
             batch.End()
         | LevelState state ->
-            batch.Begin() //Draw level
+            let transform = calculateTransform state.camera graphics.viewportSize
+            batch.Begin(transformMatrix = System.Nullable(transform)) //Draw level
             drawMap graphics state.level.map state.player
             batch.End()
             batch.Begin() //Draw gui

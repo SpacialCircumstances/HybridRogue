@@ -44,13 +44,13 @@
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
     <Compile Include="OperationCombinators.fs" />
+    <Compile Include="Camera.fs" />
     <Compile Include="Graphics.fs" />
     <Compile Include="JumpAndRun.fs" />
     <Compile Include="Level.fs" />
     <Compile Include="Input.fs" />
     <Compile Include="State.fs" />
     <Compile Include="Game1.fs" />
-    <Compile Include="Camera.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
