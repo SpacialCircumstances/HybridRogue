@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HybridRogue.Desktop", "Hybr
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "HybridRogue.Game", "HybridRogue.Game\HybridRogue.Game.fsproj", "{2225419A-3FF2-409A-AB9F-FBFEB12BB696}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FontGenerator", "FontGenerator\FontGenerator.fsproj", "{3921EE14-2FDB-43B8-B5AB-63C9A1D66CD4}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FontGenerator", "FontGenerator\FontGenerator.fsproj", "{3921EE14-2FDB-43B8-B5AB-63C9A1D66CD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSimplexNoise", "OpenSimplexNoise\OpenSimplexNoise.csproj", "{AD05345C-B411-4CE5-9B24-A16A41FC4BFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{3921EE14-2FDB-43B8-B5AB-63C9A1D66CD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3921EE14-2FDB-43B8-B5AB-63C9A1D66CD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3921EE14-2FDB-43B8-B5AB-63C9A1D66CD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD05345C-B411-4CE5-9B24-A16A41FC4BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD05345C-B411-4CE5-9B24-A16A41FC4BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD05345C-B411-4CE5-9B24-A16A41FC4BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD05345C-B411-4CE5-9B24-A16A41FC4BFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

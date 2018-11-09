@@ -68,6 +68,13 @@
       <Private>True</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OpenSimplexNoise\OpenSimplexNoise.csproj">
+      <Name>OpenSimplexNoise</Name>
+      <Project>{ad05345c-b411-4ce5-9b24-a16a41fc4bfd}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
