@@ -18,7 +18,7 @@ type GameState =
 
 let initialGameState = MenuState
 
-let updateState (state: GameState) (event: InputEvent option) =
+let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
         | MenuState ->
             match event with
