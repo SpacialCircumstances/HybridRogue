@@ -38,7 +38,7 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
             state
 
 let drawPlayer (graphics: GraphicsState) (player: Player) =
-    let (texture, region) = getTile graphics.tileset 6
+    let (texture, region) = getTile graphics.tileset 2
     do graphics.batch.Draw(texture, player.position, System.Nullable(region), Color.Blue)
 
 let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =

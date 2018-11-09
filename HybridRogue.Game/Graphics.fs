@@ -10,8 +10,8 @@ type GraphicsState = { batch: SpriteBatch; font: SpriteFont; tileset: Tileset; v
 
 let getTile (tileset: Tileset) (index: int): Texture2D * Rectangle =
     let tilesInRow = tileset.texture.Width / tileset.tileSize
-    let tileX = tilesInRow % index
-    let tileY = index / tilesInRow
+    let tileX = index % tilesInRow
+    let tileY = (index - tileX) / tilesInRow
     (tileset.texture, Rectangle(tileX * tileset.tileSize, tileY * tileset.tileSize, tileset.tileSize, tileset.tileSize))
 
 let loadGraphics (batch: SpriteBatch) (content: ContentManager) (viewportSize: Point) =
