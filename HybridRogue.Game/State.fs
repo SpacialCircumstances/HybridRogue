@@ -8,9 +8,9 @@ open Level
 open Camera
 open Microsoft.Xna.Framework.Graphics
 
-type Player = { name: string; level: int; position: Vector2 }
+type Player = { name: string; level: int; target: Rectangle }
 
-let emptyPlayer (level: Level.Level) = { name = "TestDummy"; level = 1; position = level.startingPoint }
+let emptyPlayer (level: Level.Level) = { name = "TestDummy"; level = 1; target = Rectangle(level.startingPoint, Point(16, 16)) }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
@@ -39,7 +39,7 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
 
 let drawPlayer (graphics: GraphicsState) (player: Player) =
     let (texture, region) = getTile graphics.tileset 2
-    do graphics.batch.Draw(texture, player.position, System.Nullable(region), Color.Blue)
+    do graphics.batch.Draw(texture, player.target, System.Nullable(region), Color.Blue)
 
 let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
     JumpAndRun.mapIteri (fun x y block ->
