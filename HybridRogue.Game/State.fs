@@ -10,7 +10,7 @@ open Microsoft.Xna.Framework.Graphics
 
 let tileSize = 16
 
-let gravity = Vector2(0.0f, 0.5f)
+let gravity = Vector2(0.0f, 0.02f)
 
 type Player = { name: string; level: int }
 
@@ -24,30 +24,49 @@ type GameState =
 
 let initialGameState = MenuState
 
+let accFactor = 0.1f
+let leftAcc = Vector2(-accFactor, 0.0f)
+let rightAcc = Vector2(accFactor, 0.0f)
+let upAcc = Vector2(0.0f, -accFactor)
+let downAcc = Vector2(0.0f, accFactor)
+
 let calculateAcceleration (event: InputEvent) =
     match event with
         | Pressed key ->
             match key with
                 | Keys.Left ->
-                    Vector2(-1.0f, 0.0f)
+                    leftAcc
                 | Keys.Right ->
-                    Vector2(1.0f, 0.0f)
+                    rightAcc
                 | Keys.Up ->
-                    Vector2(0.0f, -1.0f)
+                    upAcc
                 | Keys.Down ->
-                    Vector2(0.0f, 1.0f)
+                    downAcc
+                | _ -> Vector2(0.0f, 0.0f)
+        | Released key ->
+            match key with
+                | Keys.Left ->
+                    rightAcc
+                | Keys.Right ->
+                    leftAcc
+                | Keys.Up ->
+                    downAcc
+                | Keys.Down ->
+                    upAcc
                 | _ -> Vector2(0.0f, 0.0f)
         | _ -> Vector2(0.0f, 0.0f)
-
+        
 let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let acc = match event with
                 | Some event ->
                     calculateAcceleration event
                 | None -> Vector2(0.0f, 0.0f)
+    let newAcc = player.acceleration + acc
+    let totalAcc = newAcc + gravity
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
-    let velocity = player.velocity + Vector2(acc.X * timeFactor, acc.Y * timeFactor)
+    let velocity = player.velocity + Vector2(totalAcc.X * timeFactor, totalAcc.Y * timeFactor)
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
-    let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(newPosition, player.target.Size); velocity = velocity }
+    let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
     let newCamera = { scale = camera.scale; position = newPosition.ToVector2() }
     (newPlayer, newCamera)
 

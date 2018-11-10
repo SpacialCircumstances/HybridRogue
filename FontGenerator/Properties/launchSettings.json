@@ -1,1 +1,2 @@
       "commandName": "Project",
+      "commandLineArgs": "\"E:\\Projects\\FSharp\\HybridRogue\\HybridRogue.Desktop\\Content\\fonts\\square.ttf\" --out \"test.png\""
