@@ -8,9 +8,11 @@ open Level
 open Camera
 open Microsoft.Xna.Framework.Graphics
 
-type Player = { name: string; level: int; target: Rectangle }
+let tileSize = 16
 
-let emptyPlayer (level: Level.Level) = { name = "TestDummy"; level = 1; target = Rectangle(level.startingPoint, Point(16, 16)) }
+type Player = { name: string; level: int }
+
+let emptyPlayer = { name = "TestDummy"; level = 1 }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
@@ -30,14 +32,14 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                         | Released key ->
                             if key = Keys.Enter then
                                 let level = defaultLevel
-                                LevelState({ level =  level; player = emptyPlayer level; camera = createCamera (Vector2(0.0f, 300.0f)) 1.0f })
+                                LevelState({ level =  level; player = emptyPlayer; camera = createCamera (Vector2(0.0f, 300.0f)) 1.0f })
                             else
                                 state
                         | _ -> state
         | LevelState levelState ->
             state
 
-let drawPlayer (graphics: GraphicsState) (player: Player) =
+let drawPlayer (graphics: GraphicsState) (player: JumpAndRun.LevelPlayer) =
     let (texture, region) = getTile graphics.tileset 2
     do graphics.batch.Draw(texture, player.target, System.Nullable(region), Color.Blue)
 
@@ -62,7 +64,7 @@ let drawState (state: GameState) (graphics: GraphicsState) =
             let transform = calculateTransform state.camera graphics.viewportSize
             batch.Begin(transformMatrix = System.Nullable(transform)) //Draw level
             drawMap graphics state.level.map
-            drawPlayer graphics state.player
+            drawPlayer graphics state.level.player
             batch.End()
             batch.Begin() //Draw gui
             batch.DrawString(graphics.font, (sprintf "Level %i" state.player.level), Vector2(0.0f, 0.0f), Color.White)
