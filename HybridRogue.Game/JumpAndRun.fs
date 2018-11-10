@@ -44,3 +44,5 @@ let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
         let block = Seq.item i map.blocks
         do iter x y block    
 
+let tileRect (tileX: int) (tileY: int) =
+    Rectangle(tileX * tileSize, tileY * tileSize, tileSize, tileSize)

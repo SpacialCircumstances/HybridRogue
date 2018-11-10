@@ -22,6 +22,10 @@ type GameState =
 
 let initialGameState = MenuState
 
+
+let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent) =
+    (player, camera)
+
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
         | MenuState ->
@@ -37,7 +41,12 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                                 state
                         | _ -> state
         | LevelState levelState ->
-            state
+            match event with
+                | None -> state
+                | Some event -> 
+                    let (newPlayer, newCamera) = updatePlayerAndCamera levelState.level.player levelState.camera event
+                    let newLevel: JumpAndRun.Level = { map = levelState.level.map; player = newPlayer }
+                    LevelState({ player = levelState.player; camera = newCamera; level = newLevel })
 
 let drawPlayer (graphics: GraphicsState) (player: JumpAndRun.LevelPlayer) =
     let (texture, region) = getTile graphics.tileset 2
