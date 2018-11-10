@@ -40,8 +40,6 @@ let calculateAcceleration (event: InputEvent) =
                     rightAcc
                 | Keys.Up ->
                     upAcc
-                | Keys.Down ->
-                    downAcc
                 | _ -> Vector2(0.0f, 0.0f)
         | Released key ->
             match key with
@@ -51,8 +49,6 @@ let calculateAcceleration (event: InputEvent) =
                     leftAcc
                 | Keys.Up ->
                     downAcc
-                | Keys.Down ->
-                    upAcc
                 | _ -> Vector2(0.0f, 0.0f)
         | _ -> Vector2(0.0f, 0.0f)
         
