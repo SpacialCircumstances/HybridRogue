@@ -22,9 +22,25 @@ type GameState =
 
 let initialGameState = MenuState
 
-
 let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent) =
-    (player, camera)
+    match event with
+        | Pressed key ->
+            let movementDistance = tileSize
+            let oldPosition = player.target.Location
+            let newPosition = match key with
+                                | Keys.Left ->
+                                    Point(oldPosition.X - movementDistance, oldPosition.Y)
+                                | Keys.Right ->
+                                    Point(oldPosition.X + movementDistance, oldPosition.Y)
+                                | Keys.Up ->
+                                    Point(oldPosition.X, oldPosition.Y - movementDistance)
+                                | Keys.Down ->
+                                    Point(oldPosition.X, oldPosition.Y + movementDistance)
+                                | _ -> oldPosition
+            let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(newPosition, player.target.Size) }
+            let newCamera = { scale = camera.scale; position = newPosition.ToVector2() }
+            (newPlayer, newCamera)
+        | _ -> (player, camera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
