@@ -7,7 +7,7 @@ type Block = { tileType: int; coordinates: int * int }
 
 type Map = { size: Point; blocks: Block option seq; startingPoint: Point }
 
-type LevelPlayer = { target: Rectangle }
+type LevelPlayer = { target: Rectangle; velocity: Vector2 }
 
 type Level = { map: Map; player: LevelPlayer }
 
@@ -31,7 +31,7 @@ let generateLevel (param: LevelParams) =
     { size = param.size; blocks = blocks; startingPoint = Point(0, 300) }
 
 let createPlayer (map: Map) =
-    { target = Rectangle(map.startingPoint, Point(tileSize, tileSize)) }
+    { target = Rectangle(map.startingPoint, Point(tileSize, tileSize)); velocity = Vector2(0.0f, 0.0f) }
 
 let defaultLevel = 
     let map = generateLevel ({ size = Point(100, 40); seed = 12L })

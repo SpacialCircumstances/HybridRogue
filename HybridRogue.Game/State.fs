@@ -10,6 +10,8 @@ open Microsoft.Xna.Framework.Graphics
 
 let tileSize = 16
 
+let gravity = Vector2(0.0f, 0.5f)
+
 type Player = { name: string; level: int }
 
 let emptyPlayer = { name = "TestDummy"; level = 1 }
@@ -22,25 +24,32 @@ type GameState =
 
 let initialGameState = MenuState
 
-let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent) =
+let calculateAcceleration (event: InputEvent) =
     match event with
         | Pressed key ->
-            let movementDistance = tileSize
-            let oldPosition = player.target.Location
-            let newPosition = match key with
-                                | Keys.Left ->
-                                    Point(oldPosition.X - movementDistance, oldPosition.Y)
-                                | Keys.Right ->
-                                    Point(oldPosition.X + movementDistance, oldPosition.Y)
-                                | Keys.Up ->
-                                    Point(oldPosition.X, oldPosition.Y - movementDistance)
-                                | Keys.Down ->
-                                    Point(oldPosition.X, oldPosition.Y + movementDistance)
-                                | _ -> oldPosition
-            let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(newPosition, player.target.Size) }
-            let newCamera = { scale = camera.scale; position = newPosition.ToVector2() }
-            (newPlayer, newCamera)
-        | _ -> (player, camera)
+            match key with
+                | Keys.Left ->
+                    Vector2(-1.0f, 0.0f)
+                | Keys.Right ->
+                    Vector2(1.0f, 0.0f)
+                | Keys.Up ->
+                    Vector2(0.0f, -1.0f)
+                | Keys.Down ->
+                    Vector2(0.0f, 1.0f)
+                | _ -> Vector2(0.0f, 0.0f)
+        | _ -> Vector2(0.0f, 0.0f)
+
+let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
+    let acc = match event with
+                | Some event ->
+                    calculateAcceleration event
+                | None -> Vector2(0.0f, 0.0f)
+    let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
+    let velocity = player.velocity + Vector2(acc.X * timeFactor, acc.Y * timeFactor)
+    let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
+    let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(newPosition, player.target.Size); velocity = velocity }
+    let newCamera = { scale = camera.scale; position = newPosition.ToVector2() }
+    (newPlayer, newCamera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
@@ -57,12 +66,10 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                                 state
                         | _ -> state
         | LevelState levelState ->
-            match event with
-                | None -> state
-                | Some event -> 
-                    let (newPlayer, newCamera) = updatePlayerAndCamera levelState.level.player levelState.camera event
-                    let newLevel: JumpAndRun.Level = { map = levelState.level.map; player = newPlayer }
-                    LevelState({ player = levelState.player; camera = newCamera; level = newLevel })
+            let (newPlayer, newCamera) = updatePlayerAndCamera levelState.level.player levelState.camera event time
+            let newLevel: JumpAndRun.Level = { map = levelState.level.map; player = newPlayer }
+            LevelState({ player = levelState.player; camera = newCamera; level = newLevel })
+                    
 
 let drawPlayer (graphics: GraphicsState) (player: JumpAndRun.LevelPlayer) =
     let (texture, region) = getTile graphics.tileset 2
