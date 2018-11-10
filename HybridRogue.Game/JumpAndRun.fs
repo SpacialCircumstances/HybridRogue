@@ -34,7 +34,7 @@ let createPlayer (map: Map) =
     { target = Rectangle(map.startingPoint, Point(tileSize, tileSize)); velocity = Vector2(0.0f, 0.0f); acceleration = Vector2(0.0f, 0.0f) }
 
 let defaultLevel = 
-    let map = generateLevel ({ size = Point(100, 40); seed = 12L })
+    let map = generateLevel ({ size = Point(200, 40); seed = 12L })
     { map = map; player = createPlayer map }
 
 let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
