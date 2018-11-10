@@ -36,6 +36,8 @@ type Game1() as this =
     
     override this.Update(time: GameTime) =
         let keyboardState = Keyboard.GetState()
+        if keyboardState.IsKeyDown(Keys.Escape) then
+            do this.Exit()
         let (inputState, event) = updateInput lastInputState (keyboardState.GetPressedKeys()) (Mouse.GetState()) textInputEvent
         do lastInputState <- inputState
         do textInputEvent <- None
