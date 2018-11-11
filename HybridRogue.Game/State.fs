@@ -51,8 +51,8 @@ let calculateAcceleration (event: InputEvent) =
                     downAcc
                 | _ -> Vector2(0.0f, 0.0f)
         | _ -> Vector2(0.0f, 0.0f)
-        
-let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
+   
+let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): JumpAndRun.LevelPlayer =
     let acc = match event with
                 | Some event ->
                     calculateAcceleration event
@@ -62,8 +62,11 @@ let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (eve
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
     let velocity = player.velocity + Vector2(totalAcc.X * timeFactor, totalAcc.Y * timeFactor)
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
-    let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
-    let newCamera = { scale = camera.scale; position = newPosition.ToVector2() }
+    { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
+   
+let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
+    let newPlayer: JumpAndRun.LevelPlayer = calculateNewPlayerPosition player event time
+    let newCamera = { scale = camera.scale; position = newPlayer.target.Location.ToVector2() }
     (newPlayer, newCamera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
