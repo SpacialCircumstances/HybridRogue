@@ -53,6 +53,7 @@ let calculateVelocity (event: InputEvent) =
     match event with
         | Pressed key ->
             match key with
+                | Keys.Up -> Vector2(0.0f, -5.0f)
                 | Keys.Left -> leftVel
                 | Keys.Right -> rightVel
                 | _ -> emptyVec
@@ -69,9 +70,9 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
                             (calculateVelocity event, calculateAcceleration event)
                         | None -> (emptyVec, emptyVec)
     let newAcc = acc
-    let totalAcc = newAcc + gravity
+    let totalAcc = emptyVec //newAcc + gravity
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
-    let velocity = player.velocity + Vector2(totalAcc.X * timeFactor, totalAcc.Y * timeFactor) + vel
+    let velocity = player.velocity + gravity + vel
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
     { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
 
