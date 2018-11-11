@@ -46,3 +46,11 @@ let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
 
 let tileRect (tileX: int) (tileY: int) =
     Rectangle(tileX * tileSize, tileY * tileSize, tileSize, tileSize)
+
+let clampToMapCoords (map: Map) (point: Point) =
+    if map.box.Contains(point) then
+        point
+    else
+        let x = max (min point.X map.box.Right) map.box.Left
+        let y = max (min point.Y map.box.Bottom) map.box.Top
+        Point(x, y)

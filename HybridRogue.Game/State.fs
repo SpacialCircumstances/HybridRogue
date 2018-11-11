@@ -67,7 +67,8 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
     { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
 
 let collisionCheck (lastPlayer: JumpAndRun.LevelPlayer) (nextPlayer: JumpAndRun.LevelPlayer) (map: JumpAndRun.Map) =
-    Move(nextPlayer)
+    let clampToMapCoords = JumpAndRun.clampToMapCoords map (nextPlayer.target.Location + nextPlayer.target.Size)
+    Move({ nextPlayer with target = Rectangle(clampToMapCoords - nextPlayer.target.Size, nextPlayer.target.Size) })
    
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let newPlayer: JumpAndRun.LevelPlayer = calculateNewPlayerPosition player event time
