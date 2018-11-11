@@ -10,7 +10,7 @@ open Microsoft.Xna.Framework.Graphics
 
 let tileSize = 16
 
-let gravity = Vector2(0.0f, 0.02f)
+let gravity = Vector2(0.0f, 0.05f)
 
 type Player = { name: string; level: int }
 
@@ -31,7 +31,7 @@ let emptyVec = Vector2(0.0f, 0.0f)
 let leftVel = Vector2(-1.0f, 0.0f)
 let rightVel = Vector2(1.0f, 0.0f)
 
-let maxVelC = 15.0f
+let maxVelC = 12.0f
 
 let clamp minimum maximum value =
     max (min maximum value) minimum
@@ -40,7 +40,7 @@ let calculateVelocity (event: InputEvent) =
     match event with
         | Pressed key ->
             match key with
-                | Keys.Up -> Vector2(0.0f, -5.0f)
+                | Keys.Up -> Vector2(0.0f, -10.0f)
                 | Keys.Left -> leftVel
                 | Keys.Right -> rightVel
                 | _ -> emptyVec
