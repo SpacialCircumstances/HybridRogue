@@ -26,26 +26,7 @@ type GameState =
 
 let initialGameState = MenuState
 
-let accFactor = 0.01f
-let leftAcc = Vector2(-accFactor, 0.0f)
-let rightAcc = Vector2(accFactor, 0.0f)
-let upAcc = Vector2(0.0f, -accFactor)
-let downAcc = Vector2(0.0f, accFactor)
 let emptyVec = Vector2(0.0f, 0.0f)
-
-let calculateAcceleration (event: InputEvent) =
-    match event with
-        | Pressed key ->
-            match key with
-                | Keys.Up ->
-                    upAcc
-                | _ -> emptyVec
-        | Released key ->
-            match key with
-                | Keys.Up ->
-                    emptyVec
-                | _ -> emptyVec
-        | _ -> emptyVec
 
 let leftVel = Vector2(-1.0f, 0.0f)
 let rightVel = Vector2(1.0f, 0.0f)
@@ -65,16 +46,14 @@ let calculateVelocity (event: InputEvent) =
         | _ -> emptyVec
    
 let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): JumpAndRun.LevelPlayer =
-    let (vel, acc) = match event with
+    let vel = match event with
                         | Some event ->
-                            (calculateVelocity event, calculateAcceleration event)
-                        | None -> (emptyVec, emptyVec)
-    let newAcc = acc
-    let totalAcc = emptyVec //newAcc + gravity
+                            calculateVelocity event
+                        | None -> emptyVec
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
     let velocity = player.velocity + gravity + vel
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
-    { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
+    { target = Rectangle(newPosition, player.target.Size); velocity = velocity }
 
 let collisionCheck (lastPlayer: JumpAndRun.LevelPlayer) (nextPlayer: JumpAndRun.LevelPlayer) (map: JumpAndRun.Map) =
     let clampToMapCoords = JumpAndRun.clampToMapCoords map (nextPlayer.target.Location + nextPlayer.target.Size)
