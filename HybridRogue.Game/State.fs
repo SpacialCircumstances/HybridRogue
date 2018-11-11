@@ -30,6 +30,12 @@ let emptyVec = Vector2(0.0f, 0.0f)
 
 let leftVel = Vector2(-1.0f, 0.0f)
 let rightVel = Vector2(1.0f, 0.0f)
+
+let maxVelC = 15.0f
+
+let clamp minimum maximum value =
+    max (min maximum value) minimum
+
 let calculateVelocity (event: InputEvent) =
     match event with
         | Pressed key ->
@@ -44,7 +50,7 @@ let calculateVelocity (event: InputEvent) =
                 | Keys.Right -> leftVel
                 | _ -> emptyVec
         | _ -> emptyVec
-   
+  
 let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): JumpAndRun.LevelPlayer =
     let vel = match event with
                         | Some event ->
@@ -52,6 +58,7 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
                         | None -> emptyVec
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
     let velocity = player.velocity + gravity + vel
+    let velocity = Vector2(clamp -maxVelC maxVelC velocity.X, clamp -maxVelC maxVelC velocity.Y)
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
     { target = Rectangle(newPosition, player.target.Size); velocity = velocity }
 
