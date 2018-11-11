@@ -31,38 +31,47 @@ let leftAcc = Vector2(-accFactor, 0.0f)
 let rightAcc = Vector2(accFactor, 0.0f)
 let upAcc = Vector2(0.0f, -accFactor)
 let downAcc = Vector2(0.0f, accFactor)
+let emptyVec = Vector2(0.0f, 0.0f)
 
 let calculateAcceleration (event: InputEvent) =
     match event with
         | Pressed key ->
             match key with
-                | Keys.Left ->
-                    leftAcc
-                | Keys.Right ->
-                    rightAcc
                 | Keys.Up ->
                     upAcc
-                | _ -> Vector2(0.0f, 0.0f)
+                | _ -> emptyVec
         | Released key ->
             match key with
-                | Keys.Left ->
-                    rightAcc
-                | Keys.Right ->
-                    leftAcc
                 | Keys.Up ->
-                    downAcc
-                | _ -> Vector2(0.0f, 0.0f)
-        | _ -> Vector2(0.0f, 0.0f)
+                    emptyVec
+                | _ -> emptyVec
+        | _ -> emptyVec
+
+let leftVel = Vector2(-1.0f, 0.0f)
+let rightVel = Vector2(1.0f, 0.0f)
+let calculateVelocity (event: InputEvent) =
+    match event with
+        | Pressed key ->
+            match key with
+                | Keys.Left -> leftVel
+                | Keys.Right -> rightVel
+                | _ -> emptyVec
+        | Released key ->
+            match key with
+                | Keys.Left -> rightVel
+                | Keys.Right -> leftVel
+                | _ -> emptyVec
+        | _ -> emptyVec
    
 let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): JumpAndRun.LevelPlayer =
-    let acc = match event with
-                | Some event ->
-                    calculateAcceleration event
-                | None -> Vector2(0.0f, 0.0f)
-    let newAcc = player.acceleration + acc
+    let (vel, acc) = match event with
+                        | Some event ->
+                            (calculateVelocity event, calculateAcceleration event)
+                        | None -> (emptyVec, emptyVec)
+    let newAcc = acc
     let totalAcc = newAcc + gravity
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
-    let velocity = player.velocity + Vector2(totalAcc.X * timeFactor, totalAcc.Y * timeFactor)
+    let velocity = player.velocity + Vector2(totalAcc.X * timeFactor, totalAcc.Y * timeFactor) + vel
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
     { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
 
