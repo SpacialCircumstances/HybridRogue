@@ -37,6 +37,10 @@ let defaultLevel =
     let map = generateLevel ({ size = Point(200, 40); seed = 12L })
     { map = map; player = createPlayer map }
 
+let getBlock (map: Map) (x: int) (y: int) =
+    let index = (map.sizeInTiles.X * y) + x
+    Seq.item index map.blocks
+
 let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
     for i = 0 to (Seq.length map.blocks) - 1 do
         let x = i % map.sizeInTiles.X
@@ -46,6 +50,15 @@ let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
 
 let tileRect (tileX: int) (tileY: int) =
     Rectangle(tileX * tileSize, tileY * tileSize, tileSize, tileSize)
+
+let blockAt (map: Map) (pos: Point) =
+    if map.box.Contains(pos) then
+        let woOffset = pos - map.box.Location
+        let tileX = pos.X / tileSize
+        let tileY = pos.Y / tileSize
+        (tileX, tileY, getBlock map tileX tileY)
+    else
+        (-1, -1, None)
 
 let clampToMapCoords (map: Map) (point: Point) =
     if map.box.Contains(point) then

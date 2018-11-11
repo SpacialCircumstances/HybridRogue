@@ -26,7 +26,7 @@ type GameState =
 
 let initialGameState = MenuState
 
-let accFactor = 0.1f
+let accFactor = 0.01f
 let leftAcc = Vector2(-accFactor, 0.0f)
 let rightAcc = Vector2(accFactor, 0.0f)
 let upAcc = Vector2(0.0f, -accFactor)
@@ -68,7 +68,13 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
 
 let collisionCheck (lastPlayer: JumpAndRun.LevelPlayer) (nextPlayer: JumpAndRun.LevelPlayer) (map: JumpAndRun.Map) =
     let clampToMapCoords = JumpAndRun.clampToMapCoords map (nextPlayer.target.Location + nextPlayer.target.Size)
-    Move({ nextPlayer with target = Rectangle(clampToMapCoords - nextPlayer.target.Size, nextPlayer.target.Size) })
+    let (bx, by, blockTarget) = JumpAndRun.blockAt map clampToMapCoords
+    match blockTarget with
+        | None ->
+            Move({ nextPlayer with target = Rectangle(clampToMapCoords - nextPlayer.target.Size, nextPlayer.target.Size) })
+        | Some block -> 
+            let blockBox = JumpAndRun.tileRect bx by
+            Move({ nextPlayer with target = Rectangle(blockBox.Location - nextPlayer.target.Size, nextPlayer.target.Size) })
    
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let newPlayer: JumpAndRun.LevelPlayer = calculateNewPlayerPosition player event time
