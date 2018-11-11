@@ -18,6 +18,8 @@ let emptyPlayer = { name = "TestDummy"; level = 1 }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
+type CollisionAction = Move of JumpAndRun.LevelPlayer
+
 type GameState = 
         | MenuState
         | LevelState of LevelState
@@ -63,11 +65,17 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
     let velocity = player.velocity + Vector2(totalAcc.X * timeFactor, totalAcc.Y * timeFactor)
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
     { target = Rectangle(newPosition, player.target.Size); velocity = velocity; acceleration = newAcc }
+
+let collisionCheck (lastPlayer: JumpAndRun.LevelPlayer) (nextPlayer: JumpAndRun.LevelPlayer) (map: JumpAndRun.Map) =
+    Move(nextPlayer)
    
-let updatePlayerAndCamera (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
+let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let newPlayer: JumpAndRun.LevelPlayer = calculateNewPlayerPosition player event time
-    let newCamera = { scale = camera.scale; position = newPlayer.target.Location.ToVector2() }
-    (newPlayer, newCamera)
+    let collisionAction = collisionCheck player newPlayer map
+    let playerAfterMove = match collisionAction with
+                                | Move next -> next
+    let newCamera = { scale = camera.scale; position = playerAfterMove.target.Location.ToVector2() }
+    (playerAfterMove, newCamera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
@@ -84,7 +92,7 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                                 state
                         | _ -> state
         | LevelState levelState ->
-            let (newPlayer, newCamera) = updatePlayerAndCamera levelState.level.player levelState.camera event time
+            let (newPlayer, newCamera) = updatePlayerAndCamera levelState.level.map levelState.level.player levelState.camera event time
             let newLevel: JumpAndRun.Level = { map = levelState.level.map; player = newPlayer }
             LevelState({ player = levelState.player; camera = newCamera; level = newLevel })
                     

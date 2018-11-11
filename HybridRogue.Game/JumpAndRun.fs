@@ -5,7 +5,7 @@ open OpenSimplexNoise
 
 type Block = { tileType: int; coordinates: int * int }
 
-type Map = { size: Point; blocks: Block option seq; startingPoint: Point }
+type Map = { sizeInTiles: Point; blocks: Block option seq; startingPoint: Point; box: Rectangle }
 
 type LevelPlayer = { target: Rectangle; velocity: Vector2; acceleration: Vector2 }
 
@@ -28,7 +28,7 @@ let generateLevel (param: LevelParams) =
             let block = { tileType = 54; coordinates = (x, y) }
             Array.set blocks index (Some(block))
 
-    { size = param.size; blocks = blocks; startingPoint = Point(0, 300) }
+    { sizeInTiles = param.size; blocks = blocks; startingPoint = Point(0, 300); box = Rectangle(0, 0, param.size.X * tileSize, param.size.Y * tileSize) }
 
 let createPlayer (map: Map) =
     { target = Rectangle(map.startingPoint, Point(tileSize, tileSize)); velocity = Vector2(0.0f, 0.0f); acceleration = Vector2(0.0f, 0.0f) }
@@ -39,8 +39,8 @@ let defaultLevel =
 
 let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
     for i = 0 to (Seq.length map.blocks) - 1 do
-        let x = i % map.size.X
-        let y = i / map.size.Y
+        let x = i % map.sizeInTiles.X
+        let y = i / map.sizeInTiles.Y
         let block = Seq.item i map.blocks
         do iter x y block    
 
