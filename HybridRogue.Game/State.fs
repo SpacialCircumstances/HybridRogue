@@ -10,6 +10,7 @@ open Microsoft.Xna.Framework.Graphics
 open HybridRogue.Game
 open HybridRogue.Game
 open HybridRogue.Game
+open System.Diagnostics
 
 let tileSize = 16
 
@@ -66,7 +67,6 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
 let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map) =
     let position = target.Location
     let size = target.Size
-    let hsize = Point(size.X / 2, size.Y / 2)
     let distance = int(velocity.Length())
     let frac = 1.0f / (float32(distance + 1))
     let isBlock (pos: Point) =
@@ -76,10 +76,10 @@ let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map)
             | Some _ -> true
     
     let blockHit (pos: Point) =
-        isBlock (Point(pos.X - hsize.X, pos.Y - hsize.Y)) ||
-        isBlock (Point(pos.X - hsize.X, pos.Y + hsize.Y)) ||
-        isBlock (Point(pos.X + hsize.X, pos.Y - hsize.Y)) ||
-        isBlock (Point(pos.X + hsize.X, pos.Y + hsize.Y))
+        isBlock (Point(pos.X, pos.Y)) ||
+        isBlock (Point(pos.X, pos.Y + size.Y)) ||
+        isBlock (Point(pos.X + size.X, pos.Y)) ||
+        isBlock (Point(pos.X + size.X, pos.Y + size.Y))
 
     let blockAt = JumpAndRun.blockAt map
     let (finalVel, finalPos) = List.fold (fun (vel: Vector2, pos: Point) i ->
@@ -94,13 +94,17 @@ let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map)
                                             let xHit = blockHit (Point(pos.X, newPos.Y))
                                             if yHit then
                                                 if not xHit then
+                                                    Debug.WriteLine("Y")
                                                     (Vector2(vel.X, 0.0f), Point(newPos.X, pos.Y))
                                                 else
+                                                    Debug.WriteLine("Corner")
                                                     (emptyVec, pos)
                                             else
                                                 if xHit then
+                                                    Debug.WriteLine("X")
                                                     (Vector2(0.0f, vel.Y), Point(pos.X, newPos.Y))
                                                 else
+                                                    Debug.WriteLine("Corner")
                                                     (emptyVec, pos)
                                     ) (velocity, position) [0..distance]
     Move(finalPos, finalVel)
