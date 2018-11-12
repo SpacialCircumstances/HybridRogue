@@ -53,7 +53,6 @@ let tileRect (tileX: int) (tileY: int) =
 
 let blockAt (map: Map) (pos: Point) =
     if map.box.Contains(pos) then
-        let woOffset = pos - map.box.Location
         let tileX = pos.X / tileSize
         let tileY = pos.Y / tileSize
         (tileX, tileY, getBlock map tileX tileY)

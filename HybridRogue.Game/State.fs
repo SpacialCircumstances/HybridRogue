@@ -7,10 +7,13 @@ open Input
 open Level
 open Camera
 open Microsoft.Xna.Framework.Graphics
+open HybridRogue.Game
+open HybridRogue.Game
+open HybridRogue.Game
 
 let tileSize = 16
 
-let gravity = Vector2(0.0f, 0.05f)
+let gravity = Vector2(0.0f, 0.08f)
 
 type Player = { name: string; level: int }
 
@@ -18,7 +21,7 @@ let emptyPlayer = { name = "TestDummy"; level = 1 }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
-type CollisionAction = Move of JumpAndRun.LevelPlayer
+type CollisionAction = Move of Point * Vector2
 
 type GameState = 
         | MenuState
@@ -31,7 +34,7 @@ let emptyVec = Vector2(0.0f, 0.0f)
 let leftVel = Vector2(-1.0f, 0.0f)
 let rightVel = Vector2(1.0f, 0.0f)
 
-let maxVelC = 12.0f
+let maxVelC = 10.0f
 
 let clamp minimum maximum value =
     max (min maximum value) minimum
@@ -40,7 +43,7 @@ let calculateVelocity (event: InputEvent) =
     match event with
         | Pressed key ->
             match key with
-                | Keys.Up -> Vector2(0.0f, -10.0f)
+                | Keys.Up -> Vector2(0.0f, -8.0f)
                 | Keys.Left -> leftVel
                 | Keys.Right -> rightVel
                 | _ -> emptyVec
@@ -51,7 +54,7 @@ let calculateVelocity (event: InputEvent) =
                 | _ -> emptyVec
         | _ -> emptyVec
   
-let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): JumpAndRun.LevelPlayer =
+let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): Point * Vector2 =
     let vel = match event with
                         | Some event ->
                             calculateVelocity event
@@ -60,25 +63,57 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
     let velocity = player.velocity + gravity + vel
     let velocity = Vector2(clamp -maxVelC maxVelC velocity.X, clamp -maxVelC maxVelC velocity.Y)
     let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
-    { target = Rectangle(newPosition, player.target.Size); velocity = velocity }
+    (newPosition, velocity)
 
-let collisionCheck (lastPlayer: JumpAndRun.LevelPlayer) (nextPlayer: JumpAndRun.LevelPlayer) (map: JumpAndRun.Map) =
-    let clampToMapCoords = JumpAndRun.clampToMapCoords map (nextPlayer.target.Location + nextPlayer.target.Size)
-    let (bx, by, blockTarget) = JumpAndRun.blockAt map clampToMapCoords
-    match blockTarget with
-        | None ->
-            Move({ nextPlayer with target = Rectangle(clampToMapCoords - nextPlayer.target.Size, nextPlayer.target.Size) })
-        | Some block -> 
-            let blockBox = JumpAndRun.tileRect bx by
-            Move({ nextPlayer with target = Rectangle(blockBox.Location - nextPlayer.target.Size, nextPlayer.target.Size) })
+let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map) =
+    let position = target.Location
+    let size = target.Size
+    let hsize = Point(size.X / 2, size.Y / 2)
+    let distance = int(velocity.Length())
+    let frac = 1.0f / (float32(distance + 1))
+    let isBlock (pos: Point) =
+        let (_, _, b) = JumpAndRun.blockAt map pos
+        match b with
+            | None -> false
+            | Some _ -> true
+    
+    let blockHit (pos: Point) =
+        isBlock (Point(pos.X - hsize.X, pos.Y - hsize.Y)) ||
+        isBlock (Point(pos.X - hsize.X, pos.Y + hsize.Y)) ||
+        isBlock (Point(pos.X + hsize.X, pos.Y - hsize.Y)) ||
+        isBlock (Point(pos.X + hsize.X, pos.Y + hsize.Y))
+
+    let blockAt = JumpAndRun.blockAt map
+    let (finalVel, finalPos) = List.fold (fun (vel: Vector2, pos: Point) i ->
+                                    let step = (Vector2(vel.X * frac, vel.Y * frac)).ToPoint()
+                                    let newPos = pos + step
+                                    let block = blockHit newPos
+                                    match block with
+                                        | false ->
+                                            (vel, pos)
+                                        | true ->
+                                            let yHit = blockHit (Point(pos.X, newPos.Y))
+                                            match yHit with
+                                                | true ->
+                                                    (Vector2(vel.X, 0.0f), Point(newPos.X, pos.Y))
+                                                | false ->
+                                                    let xHit = blockHit (Point(newPos.X, pos.Y))
+                                                    match xHit with
+                                                        | true ->
+                                                            (Vector2(0.0f, vel.Y), Point(pos.X, newPos.Y))
+                                                        | false ->
+                                                            (emptyVec, pos)
+                                    ) (velocity, position) [0..distance]
+    Move(finalPos, finalVel)
    
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
-    let newPlayer: JumpAndRun.LevelPlayer = calculateNewPlayerPosition player event time
-    let collisionAction = collisionCheck player newPlayer map
-    let playerAfterMove = match collisionAction with
-                                | Move next -> next
-    let newCamera = { scale = camera.scale; position = playerAfterMove.target.Location.ToVector2() }
-    (playerAfterMove, newCamera)
+    let (pos, vel) = calculateNewPlayerPosition player event time
+    let collisionAction = collisionCheck (Rectangle(pos, player.target.Size)) vel map
+    match collisionAction with
+            | Move (pos, vel) ->
+                let newCamera = { scale = camera.scale; position = pos.ToVector2() }
+                let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(pos, player.target.Size); velocity = vel }
+                (newPlayer, newCamera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
