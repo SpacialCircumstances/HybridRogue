@@ -86,26 +86,20 @@ let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map)
                                     let step = (Vector2(vel.X * frac, vel.Y * frac)).ToPoint()
                                     let newPos = pos + step
                                     let block = blockHit newPos
-                                    match block with
-                                        | false ->
-                                            (vel, pos)
-                                        | true ->
-                                            let yHit = blockHit (Point(pos.X, newPos.Y))
-                                            let xHit = blockHit (Point(pos.X, newPos.Y))
-                                            if yHit then
-                                                if not xHit then
-                                                    Debug.WriteLine("Y")
-                                                    (Vector2(vel.X, 0.0f), Point(newPos.X, pos.Y))
-                                                else
-                                                    Debug.WriteLine("Corner")
-                                                    (emptyVec, pos)
-                                            else
-                                                if xHit then
-                                                    Debug.WriteLine("X")
+                                    let (x1, y1, oldBlock) = blockAt pos
+                                    let (x2, y2, newBlock) = blockAt newPos
+                                    match newBlock with
+                                        | None -> (vel, newPos)
+                                        | Some block ->
+                                            let xd = abs(x2 - x1)
+                                            let yd = abs(y2 - y1)
+                                            if xd = 1 then
+                                                if yd = 0 then
                                                     (Vector2(0.0f, vel.Y), Point(pos.X, newPos.Y))
                                                 else
-                                                    Debug.WriteLine("Corner")
                                                     (emptyVec, pos)
+                                            else
+                                                (Vector2(vel.X, 0.0f), Point(newPos.X, pos.Y))
                                     ) (velocity, position) [0..distance]
     Move(finalPos, finalVel)
    
