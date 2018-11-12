@@ -53,7 +53,8 @@ let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
                 | _ -> oldVel
         | _ -> oldVel
   
-let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): Point * Vector2 =
+let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): Vector2 * Vector2 =
+    let oldPos = player.target.Location.ToVector2()
     let vel = match event with
                         | Some event ->
                             calculateVelocity player.velocity event
@@ -61,33 +62,19 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
     let velocity = gravity + vel
     let velocity = Vector2(clamp -maxVelC maxVelC velocity.X, clamp -maxVelC maxVelC velocity.Y)
-    let newPosition = (player.target.Location + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)).ToPoint())
+    let newPosition = (oldPos + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)))
     (newPosition, velocity)
 
-let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map) =
-    let position = target.Location
-    let size = target.Size
+let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
     let distance = int(velocity.Length())
     let frac = 1.0f / (float32(distance + 1))
-    let isBlock (pos: Point) =
-        let (_, _, b) = JumpAndRun.blockAt map pos
-        match b with
-            | None -> false
-            | Some _ -> true
-    
-    let blockHit (pos: Point) =
-        isBlock (Point(pos.X, pos.Y)) ||
-        isBlock (Point(pos.X, pos.Y + size.Y)) ||
-        isBlock (Point(pos.X + size.X, pos.Y)) ||
-        isBlock (Point(pos.X + size.X, pos.Y + size.Y))
 
     let blockAt = JumpAndRun.blockAt map
-    let (finalVel, finalPos) = List.fold (fun (vel: Vector2, pos: Point) i ->
-                                    let step = (Vector2(vel.X * frac, vel.Y * frac)).ToPoint()
+    let (finalVel, finalPos) = List.fold (fun (vel: Vector2, pos: Vector2) i ->
+                                    let step = (Vector2(vel.X * frac, vel.Y * frac))
                                     let newPos = pos + step
-                                    let block = blockHit newPos
-                                    let (x1, y1, oldBlock) = blockAt pos
-                                    let (x2, y2, newBlock) = blockAt newPos
+                                    let (x1, y1, oldBlock) = blockAt (pos.ToPoint())
+                                    let (x2, y2, newBlock) = blockAt (newPos.ToPoint())
                                     match newBlock with
                                         | None -> (vel, newPos)
                                         | Some block ->
@@ -95,17 +82,17 @@ let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map)
                                             let yd = abs(y2 - y1)
                                             if xd = 1 then
                                                 if yd = 0 then
-                                                    (Vector2(0.0f, vel.Y), Point(pos.X, newPos.Y))
+                                                    (Vector2(0.0f, vel.Y), Vector2(pos.X, newPos.Y))
                                                 else
                                                     (emptyVec, pos)
                                             else
-                                                (Vector2(vel.X, 0.0f), Point(newPos.X, pos.Y))
+                                                (Vector2(vel.X, 0.0f), Vector2(newPos.X, pos.Y))
                                     ) (velocity, position) [0..distance]
-    Move(finalPos, finalVel)
+    Move(finalPos.ToPoint(), finalVel)
    
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let (pos, vel) = calculateNewPlayerPosition player event time
-    let collisionAction = collisionCheck (Rectangle(pos, player.target.Size)) vel map
+    let collisionAction = collisionCheck pos (player.target.Size.ToVector2()) vel map
     match collisionAction with
             | Move (pos, vel) ->
                 let newCamera = { scale = camera.scale; position = pos.ToVector2() }
