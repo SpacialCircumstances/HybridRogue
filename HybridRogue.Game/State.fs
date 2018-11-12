@@ -91,16 +91,17 @@ let collisionCheck (target: Rectangle) (velocity: Vector2) (map: JumpAndRun.Map)
                                             (vel, pos)
                                         | true ->
                                             let yHit = blockHit (Point(pos.X, newPos.Y))
-                                            match yHit with
-                                                | true ->
+                                            let xHit = blockHit (Point(pos.X, newPos.Y))
+                                            if yHit then
+                                                if not xHit then
                                                     (Vector2(vel.X, 0.0f), Point(newPos.X, pos.Y))
-                                                | false ->
-                                                    let xHit = blockHit (Point(newPos.X, pos.Y))
-                                                    match xHit with
-                                                        | true ->
-                                                            (Vector2(0.0f, vel.Y), Point(pos.X, newPos.Y))
-                                                        | false ->
-                                                            (emptyVec, pos)
+                                                else
+                                                    (emptyVec, pos)
+                                            else
+                                                if xHit then
+                                                    (Vector2(0.0f, vel.Y), Point(pos.X, newPos.Y))
+                                                else
+                                                    (emptyVec, pos)
                                     ) (velocity, position) [0..distance]
     Move(finalPos, finalVel)
    
