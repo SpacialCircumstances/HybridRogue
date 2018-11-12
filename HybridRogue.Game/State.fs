@@ -22,7 +22,7 @@ let emptyPlayer = { name = "TestDummy"; level = 1 }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
-type CollisionAction = Move of Point * Vector2
+type CollisionAction = Move of Vector2 * Vector2
 
 type GameState = 
         | MenuState
@@ -54,7 +54,7 @@ let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
         | _ -> oldVel
   
 let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): Vector2 * Vector2 =
-    let oldPos = player.target.Location.ToVector2()
+    let oldPos = player.position
     let vel = match event with
                         | Some event ->
                             calculateVelocity player.velocity event
@@ -88,15 +88,15 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                                             else
                                                 (Vector2(vel.X, 0.0f), Vector2(newPos.X, pos.Y))
                                     ) (velocity, position) [0..distance]
-    Move(finalPos.ToPoint(), finalVel)
+    Move(finalPos, finalVel)
    
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let (pos, vel) = calculateNewPlayerPosition player event time
-    let collisionAction = collisionCheck pos (player.target.Size.ToVector2()) vel map
+    let collisionAction = collisionCheck pos player.size vel map
     match collisionAction with
             | Move (pos, vel) ->
-                let newCamera = { scale = camera.scale; position = pos.ToVector2() }
-                let newPlayer: JumpAndRun.LevelPlayer = { target = Rectangle(pos, player.target.Size); velocity = vel }
+                let newCamera = { scale = camera.scale; position = pos }
+                let newPlayer: JumpAndRun.LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 (newPlayer, newCamera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
@@ -121,7 +121,8 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
 
 let drawPlayer (graphics: GraphicsState) (player: JumpAndRun.LevelPlayer) =
     let (texture, region) = getTile graphics.tileset 2
-    do graphics.batch.Draw(texture, player.target, System.Nullable(region), Color.Blue)
+    let playerRect = Rectangle(player.position.ToPoint(), player.size.ToPoint()) //TODO
+    do graphics.batch.Draw(texture, playerRect, System.Nullable(region), Color.Blue)
 
 let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
     JumpAndRun.mapIteri (fun x y block ->
