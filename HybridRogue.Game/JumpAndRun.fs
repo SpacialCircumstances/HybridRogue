@@ -51,10 +51,10 @@ let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
 let tileRect (tileX: int) (tileY: int) =
     Rectangle(tileX * tileSize, tileY * tileSize, tileSize, tileSize)
 
-let blockAt (map: Map) (pos: Point) =
+let blockAt (map: Map) (pos: Vector2) =
     if map.box.Contains(pos) then
-        let tileX = pos.X / tileSize
-        let tileY = pos.Y / tileSize
+        let tileX = int(pos.X) / tileSize
+        let tileY = int(pos.Y) / tileSize
         (tileX, tileY, getBlock map tileX tileY)
     else
         (-1, -1, None)

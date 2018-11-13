@@ -11,6 +11,7 @@ open HybridRogue.Game
 open HybridRogue.Game
 open HybridRogue.Game
 open System.Diagnostics
+open HybridRogue.Game
 
 let tileSize = 16
 
@@ -62,32 +63,27 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
     let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
     let velocity = gravity + vel
     let velocity = Vector2(clamp -maxVelC maxVelC velocity.X, clamp -maxVelC maxVelC velocity.Y)
-    let newPosition = (oldPos + (Vector2(velocity.X * timeFactor, velocity.Y * timeFactor)))
+    let newPosition = oldPos + (player.velocity * timeFactor)
     (newPosition, velocity)
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
-    let distance = int(velocity.Length())
-    let frac = 1.0f / (float32(distance + 1))
-
     let blockAt = JumpAndRun.blockAt map
-    let (finalVel, finalPos) = List.fold (fun (vel: Vector2, pos: Vector2) i ->
-                                    let step = (Vector2(vel.X * frac, vel.Y * frac))
-                                    let newPos = pos + step
-                                    let (x1, y1, oldBlock) = blockAt (pos.ToPoint())
-                                    let (x2, y2, newBlock) = blockAt (newPos.ToPoint())
-                                    match newBlock with
-                                        | None -> (vel, newPos)
-                                        | Some block ->
-                                            let xd = abs(x2 - x1)
-                                            let yd = abs(y2 - y1)
-                                            if xd = 1 then
-                                                if yd = 0 then
-                                                    (Vector2(0.0f, vel.Y), Vector2(pos.X, newPos.Y))
-                                                else
-                                                    (emptyVec, pos)
+    let (x1, y1, oldBlock) = blockAt position
+    let newPos = position + velocity
+    let (x2, y2, newBlock) = blockAt newPos
+    let (finalVel, finalPos) = match newBlock with
+                                    | None -> (velocity, newPos)
+                                    | Some block ->
+                                        let xd = abs(x2 - x1)
+                                        let yd = abs(y2 - y1)
+                                        if xd = 1 then
+                                            if yd = 0 then
+                                                (Vector2(0.0f, velocity.Y), Vector2(position.X, newPos.Y))
                                             else
-                                                (Vector2(vel.X, 0.0f), Vector2(newPos.X, pos.Y))
-                                    ) (velocity, position) [0..distance]
+                                                (emptyVec, position)
+                                        else
+                                            (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
+
     Move(finalPos, finalVel)
    
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
