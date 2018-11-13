@@ -59,7 +59,7 @@ let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
     let blockAt = JumpAndRun.blockAt map
-    let (x1, y1, _) = blockAt (position + size / 2.0f)
+    let (x1, y1, _) = blockAt position
     let newPos = position + velocity
     let (x2, y2, newBlock) = 
         let (x, y, b) = blockAt (newPos)
@@ -68,27 +68,27 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
             | None ->
                 let (x, y, b) = blockAt (newPos + size)
                 match b with
-                    | Some _ -> (x, y, b)
+                    | Some _ -> (x - 1, y - 1, b)
                     | None ->
                         let (x, y, b) = blockAt (Vector2(newPos.X, newPos.Y + size.Y))
                         match b with
-                            | Some _ -> (x, y, b)
+                            | Some _ -> (x, y - 1, b)
                             | None ->
-                                blockAt (Vector2(newPos.X + size.X, newPos.Y))
+                                let (x, y, b) = blockAt (Vector2(newPos.X + size.X, newPos.Y))
+                                (x - 1, y, b)
                                 
     let (finalVel, finalPos) = match newBlock with
                                     | None -> (velocity, newPos)
                                     | Some block ->
                                         let xd = abs(x2 - x1)
                                         let yd = abs(y2 - y1)
-                                        if xd > 1 || yd > 1 then raise (InvalidOperationException())
-                                        if xd = 1 then
+                                        if xd >= 1 then
                                             if yd = 0 then
-                                                (Vector2(0.0f, velocity.Y), position)
+                                                (Vector2(0.0f, velocity.Y), Vector2(position.X, newPos.Y))
                                             else
                                                 (emptyVec, position)
                                         else
-                                            (Vector2(velocity.X, 0.0f), position)
+                                            (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
 
     Move(finalPos, finalVel)
    
