@@ -12,6 +12,7 @@ open HybridRogue.Game
 open HybridRogue.Game
 open System.Diagnostics
 open HybridRogue.Game
+open System
 
 let tileSize = 16
 
@@ -76,13 +77,14 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                                     | Some block ->
                                         let xd = abs(x2 - x1)
                                         let yd = abs(y2 - y1)
+                                        if xd > 1 || yd > 1 then raise (InvalidOperationException())
                                         if xd = 1 then
                                             if yd = 0 then
-                                                (Vector2(0.0f, velocity.Y), Vector2(position.X, newPos.Y))
+                                                (Vector2(0.0f, velocity.Y), position)
                                             else
                                                 (emptyVec, position)
                                         else
-                                            (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
+                                            (Vector2(velocity.X, 0.0f), position)
 
     Move(finalPos, finalVel)
    
