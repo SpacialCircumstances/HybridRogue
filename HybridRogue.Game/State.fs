@@ -59,12 +59,23 @@ let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
     let blockAt = JumpAndRun.blockAt map
-    let (x1, y1, oldBlock) = blockAt (position + size / 2.0f)
-    match oldBlock with
-        | None -> ()
-        | Some block -> do Debug.WriteLine("We are stuck")
+    let (x1, y1, _) = blockAt (position + size / 2.0f)
     let newPos = position + velocity
-    let (x2, y2, newBlock) = blockAt (newPos + size / 2.0f)
+    let (x2, y2, newBlock) = 
+        let (x, y, b) = blockAt (newPos)
+        match b with
+            | Some _ -> (x, y, b)
+            | None ->
+                let (x, y, b) = blockAt (newPos + size)
+                match b with
+                    | Some _ -> (x, y, b)
+                    | None ->
+                        let (x, y, b) = blockAt (Vector2(newPos.X, newPos.Y + size.Y))
+                        match b with
+                            | Some _ -> (x, y, b)
+                            | None ->
+                                blockAt (Vector2(newPos.X + size.X, newPos.Y))
+                                
     let (finalVel, finalPos) = match newBlock with
                                     | None -> (velocity, newPos)
                                     | Some block ->
