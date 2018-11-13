@@ -139,7 +139,7 @@ let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
             | Some block ->
                 let (texture, region) = getTile graphics.tileset block.tileType
                 let (x, y) = block.coordinates
-                graphics.batch.Draw(texture, Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), System.Nullable(region), Color.White)
+                graphics.batch.Draw(texture, Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), System.Nullable(region), block.color)
     ) map                
 
 let drawState (state: GameState) (graphics: GraphicsState) =
