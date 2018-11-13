@@ -3,7 +3,10 @@
 open Microsoft.Xna.Framework
 open OpenSimplexNoise
 
-type Block = { tileType: int; coordinates: int * int; color: Color }
+type CollisionAction = 
+    | Stop
+
+type Block = { tileType: int; coordinates: int * int; color: Color; collisionAction: CollisionAction }
 
 type Map = { sizeInTiles: Point; blocks: Block option seq; startingPoint: Point; box: Rectangle }
 
@@ -25,7 +28,7 @@ let generateLevel (param: LevelParams) =
         let start = (param.size.Y - 2) - nv
         for y = start to param.size.Y - 1 do
             let index = (y * param.size.X) + x
-            let block = { tileType = 54; coordinates = (x, y); color = Color.White }
+            let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
             Array.set blocks index (Some(block))
 
     { sizeInTiles = param.size; blocks = blocks; startingPoint = Point(0, 300); box = Rectangle(0, 0, param.size.X * tileSize, param.size.Y * tileSize) }

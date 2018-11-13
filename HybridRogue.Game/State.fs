@@ -70,21 +70,22 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                             | None ->
                                 let (x, y, b) = blockAt (newPos + size)
                                 (x - 1, y - 1, b)
-                                
-    let (finalVel, finalPos) = match newBlock with
-                                    | None -> (velocity, newPos)
-                                    | Some block ->
-                                        let xd = abs(x2 - x1)
-                                        let yd = abs(y2 - y1)
-                                        if xd >= 1 then
-                                            if yd = 0 then
-                                                (Vector2(0.0f, velocity.Y), Vector2(position.X, newPos.Y))
-                                            else
-                                                (emptyVec, position)
-                                        else
-                                            (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
-
-    Move(finalPos, finalVel)
+                               
+    match newBlock with
+        | None -> Move(newPos, velocity)
+        | Some block ->
+            match block.collisionAction with
+                | Stop ->
+                    let xd = abs(x2 - x1)
+                    let yd = abs(y2 - y1)
+                    let (finalVel, finalPos) = if xd >= 1 then
+                                                    if yd = 0 then
+                                                        (Vector2(0.0f, velocity.Y), Vector2(position.X, newPos.Y))
+                                                    else
+                                                        (emptyVec, position)
+                                                else
+                                                    (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
+                    Move(finalPos, finalVel)
    
 let isOnFloor map pos =
     let (x, y, b) = blockAt map pos
