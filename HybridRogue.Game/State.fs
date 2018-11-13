@@ -69,9 +69,9 @@ let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEve
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
     let blockAt = JumpAndRun.blockAt map
-    let (x1, y1, oldBlock) = blockAt position
+    let (x1, y1, oldBlock) = blockAt (position + size / 2.0f)
     let newPos = position + velocity
-    let (x2, y2, newBlock) = blockAt newPos
+    let (x2, y2, newBlock) = blockAt (newPos + size / 2.0f)
     let (finalVel, finalPos) = match newBlock with
                                     | None -> (velocity, newPos)
                                     | Some block ->
