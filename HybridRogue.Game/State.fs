@@ -66,16 +66,16 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
         match b with
             | Some _ -> (x, y, b)
             | None ->
-                let (x, y, b) = blockAt (newPos + size)
+                let (x, y, b) = blockAt (Vector2(newPos.X + size.X, newPos.Y))
                 match b with
-                    | Some _ -> (x - 1, y - 1, b)
+                    | Some _ -> (x - 1, y, b)
                     | None ->
                         let (x, y, b) = blockAt (Vector2(newPos.X, newPos.Y + size.Y))
                         match b with
                             | Some _ -> (x, y - 1, b)
                             | None ->
-                                let (x, y, b) = blockAt (Vector2(newPos.X + size.X, newPos.Y))
-                                (x - 1, y, b)
+                                let (x, y, b) = blockAt (newPos + size)
+                                (x - 1, y - 1, b)
                                 
     let (finalVel, finalPos) = match newBlock with
                                     | None -> (velocity, newPos)
@@ -92,12 +92,19 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
 
     Move(finalPos, finalVel)
    
+let isOnFloor map pos =
+    let (x, y, b) = JumpAndRun.blockAt map pos
+    match JumpAndRun.getBlock map x (y + 1) with
+        | None -> false
+        | Some _ -> true
+
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let playerVelocity = match event with
                             | Some event ->
                                 calculateVelocity player.velocity event
                             | None -> player.velocity
-    let unclampedVel = playerVelocity + gravity
+    let onFloor = isOnFloor map (player.position + (player.size / 2.0f))
+    let unclampedVel = if onFloor then playerVelocity else playerVelocity + gravity
     let vel = Vector2(clampVelocity unclampedVel.X, clampVelocity unclampedVel.Y)
     let collisionAction = collisionCheck player.position player.size vel map
     match collisionAction with
