@@ -16,7 +16,7 @@ open System
 
 let tileSize = 16
 
-let gravity = Vector2(0.0f, 0.08f)
+let gravity = Vector2(0.0f, 0.12f)
 
 type Player = { name: string; level: int }
 
@@ -34,7 +34,7 @@ let initialGameState = MenuState
 
 let emptyVec = Vector2(0.0f, 0.0f)
 
-let normalVel = 1.0f
+let normalVel = 2.0f
 let maxVelC = 10.0f
 
 let clamp minimum maximum value =
@@ -46,7 +46,7 @@ let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
     match event with
         | Pressed key ->
             match key with
-                | Keys.Up -> Vector2(0.0f, -8.0f) + oldVel
+                | Keys.Up -> Vector2(0.0f, -7.0f) + oldVel
                 | Keys.Left -> Vector2(-normalVel, oldVel.Y)
                 | Keys.Right -> Vector2(normalVel, oldVel.Y)
                 | _ -> oldVel
