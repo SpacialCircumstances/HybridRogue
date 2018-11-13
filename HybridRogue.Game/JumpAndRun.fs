@@ -39,7 +39,10 @@ let defaultLevel =
 
 let getBlock (map: Map) (x: int) (y: int) =
     let index = (map.sizeInTiles.X * y) + x
-    Seq.item index map.blocks
+    if index > 0 && index < (Seq.length map.blocks) then
+        Seq.item index map.blocks
+    else
+        None
 
 let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
     for i = 0 to (Seq.length map.blocks) - 1 do
