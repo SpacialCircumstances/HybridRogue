@@ -129,8 +129,8 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
 
 let drawPlayer (graphics: GraphicsState) (player: LevelPlayer) =
     let (texture, region) = getTile graphics.tileset 2
-    let playerRect = Rectangle(player.position.ToPoint(), player.size.ToPoint()) //TODO
-    do graphics.batch.Draw(texture, playerRect, System.Nullable(region), Color.Blue)
+    let scale = player.size / float32(region.Size.X)
+    do graphics.batch.Draw(texture, player.position, System.Nullable(region), Color.Blue, 0.0f, emptyVec, scale, SpriteEffects.None, 0.0f)
 
 let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
     mapIteri (fun x y block ->
