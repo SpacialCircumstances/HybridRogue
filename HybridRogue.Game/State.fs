@@ -4,17 +4,11 @@ open HybridRogue.Game.Graphics
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
 open Input
-open Level
+open JumpAndRun
 open Camera
 open Microsoft.Xna.Framework.Graphics
 open HybridRogue.Game
-open HybridRogue.Game
-open HybridRogue.Game
-open System.Diagnostics
-open HybridRogue.Game
 open System
-
-let tileSize = 16
 
 let gravity = Vector2(0.0f, 0.12f)
 
@@ -93,12 +87,12 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
     Move(finalPos, finalVel)
    
 let isOnFloor map pos =
-    let (x, y, b) = JumpAndRun.blockAt map pos
-    match JumpAndRun.getBlock map x (y + 1) with
+    let (x, y, b) = blockAt map pos
+    match getBlock map x (y + 1) with
         | None -> false
         | Some _ -> true
 
-let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
+let updatePlayerAndCamera (map: JumpAndRun.Map) (player: LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
     let playerVelocity = match event with
                             | Some event ->
                                 calculateVelocity player.velocity event
@@ -110,7 +104,7 @@ let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer)
     match collisionAction with
             | Move (pos, vel) ->
                 let newCamera = { scale = camera.scale; position = pos }
-                let newPlayer: JumpAndRun.LevelPlayer = { position = pos; size = player.size; velocity = vel }
+                let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 (newPlayer, newCamera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
@@ -129,23 +123,23 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                         | _ -> state
         | LevelState levelState ->
             let (newPlayer, newCamera) = updatePlayerAndCamera levelState.level.map levelState.level.player levelState.camera event time
-            let newLevel: JumpAndRun.Level = { map = levelState.level.map; player = newPlayer }
+            let newLevel: Level = { map = levelState.level.map; player = newPlayer }
             LevelState({ player = levelState.player; camera = newCamera; level = newLevel })
                     
 
-let drawPlayer (graphics: GraphicsState) (player: JumpAndRun.LevelPlayer) =
+let drawPlayer (graphics: GraphicsState) (player: LevelPlayer) =
     let (texture, region) = getTile graphics.tileset 2
     let playerRect = Rectangle(player.position.ToPoint(), player.size.ToPoint()) //TODO
     do graphics.batch.Draw(texture, playerRect, System.Nullable(region), Color.Blue)
 
 let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
-    JumpAndRun.mapIteri (fun x y block ->
+    mapIteri (fun x y block ->
         match block with
             | None -> ()
             | Some block ->
                 let (texture, region) = getTile graphics.tileset block.tileType
                 let (x, y) = block.coordinates
-                graphics.batch.Draw(texture, Rectangle(x * JumpAndRun.tileSize, y * JumpAndRun.tileSize, JumpAndRun.tileSize, JumpAndRun.tileSize), System.Nullable(region), Color.White)
+                graphics.batch.Draw(texture, Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), System.Nullable(region), Color.White)
     ) map                
 
 let drawState (state: GameState) (graphics: GraphicsState) =
