@@ -40,6 +40,8 @@ let maxVelC = 10.0f
 let clamp minimum maximum value =
     max (min maximum value) minimum
 
+let clampVelocity = clamp -maxVelC maxVelC
+
 let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
     match event with
         | Pressed key ->
@@ -54,22 +56,13 @@ let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
                 | Keys.Right -> Vector2(0.0f, oldVel.Y)
                 | _ -> oldVel
         | _ -> oldVel
-  
-let calculateNewPlayerPosition (player: JumpAndRun.LevelPlayer) (event: InputEvent option) (time: GameTime): Vector2 * Vector2 =
-    let oldPos = player.position
-    let vel = match event with
-                        | Some event ->
-                            calculateVelocity player.velocity event
-                        | None -> player.velocity
-    let timeFactor = float32(time.ElapsedGameTime.TotalSeconds * 100.0)
-    let velocity = gravity + vel
-    let velocity = Vector2(clamp -maxVelC maxVelC velocity.X, clamp -maxVelC maxVelC velocity.Y)
-    let newPosition = oldPos + (player.velocity * timeFactor)
-    (newPosition, velocity)
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
     let blockAt = JumpAndRun.blockAt map
     let (x1, y1, oldBlock) = blockAt (position + size / 2.0f)
+    match oldBlock with
+        | None -> ()
+        | Some block -> do Debug.WriteLine("We are stuck")
     let newPos = position + velocity
     let (x2, y2, newBlock) = blockAt (newPos + size / 2.0f)
     let (finalVel, finalPos) = match newBlock with
@@ -89,8 +82,13 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
     Move(finalPos, finalVel)
    
 let updatePlayerAndCamera (map: JumpAndRun.Map) (player: JumpAndRun.LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
-    let (pos, vel) = calculateNewPlayerPosition player event time
-    let collisionAction = collisionCheck pos player.size vel map
+    let playerVelocity = match event with
+                            | Some event ->
+                                calculateVelocity player.velocity event
+                            | None -> player.velocity
+    let unclampedVel = playerVelocity + gravity
+    let vel = Vector2(clampVelocity unclampedVel.X, clampVelocity unclampedVel.Y)
+    let collisionAction = collisionCheck player.position player.size vel map
     match collisionAction with
             | Move (pos, vel) ->
                 let newCamera = { scale = camera.scale; position = pos }
