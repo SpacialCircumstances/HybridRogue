@@ -12,9 +12,11 @@ open System
 
 let gravity = Vector2(0.0f, 0.12f)
 
-type Player = { name: string; level: int }
+type Player = { name: string; level: int; levelQueue: LevelParams list }
 
-let emptyPlayer = { name = "TestDummy"; level = 1 }
+let defaultLevels = [ levelParams (Point(200, 40)) 15L Mountain; levelParams (Point(100, 30)) 12L Underground ]
+
+let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
@@ -127,8 +129,8 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                 { camera = newCamera; player = levelState.player; level = newLevel }
             | NextLevel ->
                 printfn "Reached end of level"
-                let newPlayer = { levelState.player with level = levelState.player.level + 1 }
-                let newLevel = defaultLevel
+                let newLevel = generateLevel levelState.player.levelQueue.Head
+                let newPlayer = { levelState.player with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail }
                 { camera = defaultCamera; player = newPlayer; level = newLevel }
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
@@ -140,8 +142,9 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                     match event with
                         | Released key ->
                             if key = Keys.Enter then
-                                let level = defaultLevel
-                                LevelState({ level =  level; player = emptyPlayer; camera = defaultCamera })
+                                let player = emptyPlayer
+                                let level = generateLevel player.levelQueue.Head
+                                LevelState({ level =  level; player = { player with levelQueue = player.levelQueue.Tail }; camera = defaultCamera })
                             else
                                 state
                         | _ -> state

@@ -21,6 +21,12 @@ let tileSize = 16
 
 type LevelParams = { size: Point; seed: int64; levelType: LevelType }
 
+let levelParams (size: Point) (seed: int64) (levelType: LevelType) =
+    { size = size; seed = seed; levelType = levelType }
+
+let createPlayer (map: Map) =
+    { position = map.startingPoint.ToVector2(); size = Vector2(float32(tileSize)); velocity = Vector2(0.0f, 0.0f) }
+
 let generateLevel (param: LevelParams) =
     let mapSize = param.size.X * param.size.Y
     let blocks: Block option array = [| for i in 0..(mapSize - 1) -> None |]
@@ -48,14 +54,9 @@ let generateLevel (param: LevelParams) =
                 let block = { tileType = 54; coordinates = (x, param.size.Y - 1); color = Color.White; collisionAction = Stop }
                 Array.set blocks (x + lastRow) (Some(block))
 
-    { sizeInTiles = param.size; blocks = blocks; startingPoint = Point(0, 300); box = Rectangle(0, 0, param.size.X * tileSize, param.size.Y * tileSize) }
-
-let createPlayer (map: Map) =
-    { position = map.startingPoint.ToVector2(); size = Vector2(float32(tileSize)); velocity = Vector2(0.0f, 0.0f) }
-
-let defaultLevel = 
-    let map = generateLevel ({ size = Point(200, 40); seed = 12L; levelType = Mountain })
-    { map = map; player = createPlayer map }
+    let map = { sizeInTiles = param.size; blocks = blocks; startingPoint = Point(0, 300); box = Rectangle(0, 0, param.size.X * tileSize, param.size.Y * tileSize) }
+    let player = createPlayer map
+    { player = player; map = map }
 
 let getBlock (map: Map) (x: int) (y: int) =
     let index = (map.sizeInTiles.X * y) + x
