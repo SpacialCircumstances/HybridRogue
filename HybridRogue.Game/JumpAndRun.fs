@@ -11,7 +11,7 @@ type LevelType = Underground | Mountain
 
 type Block = { tileType: int; coordinates: int * int; color: Color; collisionAction: CollisionAction }
 
-type Map = { sizeInTiles: Point; blocks: Block option seq; startingPoint: Point; box: Rectangle }
+type Map = { sizeInTiles: Point; blocks: Block option array; startingPoint: Point; box: Rectangle }
 
 type LevelPlayer = { position: Vector2; size: Vector2; velocity: Vector2 }
 
@@ -69,7 +69,7 @@ let mapIteri (iter: int -> int -> Block option -> unit) (map: Map) =
     for i = 0 to (Seq.length map.blocks) - 1 do
         let x = i % map.sizeInTiles.X
         let y = i / map.sizeInTiles.Y
-        let block = Seq.item i map.blocks
+        let block = Array.item i map.blocks
         do iter x y block    
 
 let tileRect (tileX: int) (tileY: int) =
