@@ -34,6 +34,8 @@ let emptyVec = Vector2(0.0f, 0.0f)
 let normalVel = 2.0f
 let maxVelC = 10.0f
 
+let defaultCamera = createCamera (Vector2(0.0f, 300.0f)) 1.0f
+
 let clamp minimum maximum value =
     max (min maximum value) minimum
 
@@ -105,7 +107,10 @@ let isOnFloor map pos =
         | None -> false
         | Some _ -> true
 
-let updatePlayerAndCamera (map: JumpAndRun.Map) (player: LevelPlayer) (camera: Camera) (event: InputEvent option) (time: GameTime) =
+let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
+    let player = levelState.level.player
+    let map = levelState.level.map
+    let camera = levelState.camera
     let playerVelocity = match event with
                             | Some event ->
                                 calculateVelocity player.velocity event
@@ -118,10 +123,13 @@ let updatePlayerAndCamera (map: JumpAndRun.Map) (player: LevelPlayer) (camera: C
             | Move (pos, vel) ->
                 let newCamera = { scale = camera.scale; position = pos }
                 let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
-                (newPlayer, newCamera)
+                let newLevel = { player = newPlayer; map = map }
+                { camera = newCamera; player = levelState.player; level = newLevel }
             | NextLevel ->
                 printfn "Reached end of level"
-                (player, camera)
+                let newPlayer = { levelState.player with level = levelState.player.level + 1 }
+                let newLevel = defaultLevel
+                { camera = defaultCamera; player = newPlayer; level = newLevel }
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
@@ -133,14 +141,13 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                         | Released key ->
                             if key = Keys.Enter then
                                 let level = defaultLevel
-                                LevelState({ level =  level; player = emptyPlayer; camera = createCamera (Vector2(0.0f, 300.0f)) 1.0f })
+                                LevelState({ level =  level; player = emptyPlayer; camera = defaultCamera })
                             else
                                 state
                         | _ -> state
         | LevelState levelState ->
-            let (newPlayer, newCamera) = updatePlayerAndCamera levelState.level.map levelState.level.player levelState.camera event time
-            let newLevel: Level = { map = levelState.level.map; player = newPlayer }
-            LevelState({ player = levelState.player; camera = newCamera; level = newLevel })
+            let newState = updateLevelState levelState event time
+            LevelState(newState)
                     
 
 let drawPlayer (graphics: GraphicsState) (player: LevelPlayer) =
