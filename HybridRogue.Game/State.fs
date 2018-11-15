@@ -39,20 +39,27 @@ let clamp minimum maximum value =
 
 let clampVelocity = clamp -maxVelC maxVelC
 
+let velocityByPressedKeys (oldVel: Vector2) (keyboard: KeyboardState) =
+    let lpressed = keyboard.IsKeyDown(Keys.Left)
+    let rpressed = keyboard.IsKeyDown(Keys.Right)
+    if lpressed then
+        if rpressed then
+            Vector2(0.0f, oldVel.Y)
+        else
+            Vector2(-normalVel, oldVel.Y)
+    else
+        if rpressed then
+            Vector2(normalVel, oldVel.Y)
+        else
+            Vector2(0.0f, oldVel.Y)
+
 let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
     match event with
         | Pressed key ->
             match key with
                 | Keys.Up -> Vector2(0.0f, -7.0f) + oldVel
-                | Keys.Left -> Vector2(-normalVel, oldVel.Y)
-                | Keys.Right -> Vector2(normalVel, oldVel.Y)
-                | _ -> oldVel
-        | Released key ->
-            match key with
-                | Keys.Left -> Vector2(0.0f, oldVel.Y)
-                | Keys.Right -> Vector2(0.0f, oldVel.Y)
-                | _ -> oldVel
-        | _ -> oldVel
+                | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
+        | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
     let blockAt = JumpAndRun.blockAt map
