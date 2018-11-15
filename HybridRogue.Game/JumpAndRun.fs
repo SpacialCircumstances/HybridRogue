@@ -31,6 +31,8 @@ let generateLevel (param: LevelParams) =
             for x = 0 to param.size.X - 2  do
                 let nv = abs(int(noise.Evaluate(float(x) / 20.0, 0.0) * variation))
                 let start = (param.size.Y - 2) - nv
+                let sky = { tileType = 50; coordinates = (x, 0); color = Color.SkyBlue; collisionAction = Stop }
+                Array.set blocks x (Some(sky))
                 for y = start to param.size.Y - 1 do
                     let index = (y * param.size.X) + x
                     let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
