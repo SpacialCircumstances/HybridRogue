@@ -5,6 +5,7 @@ open OpenSimplexNoise
 
 type CollisionAction = 
     | Stop
+    | NextLevel
 
 type LevelType = Underground | Mountain
 
@@ -27,13 +28,18 @@ let generateLevel (param: LevelParams) =
         | Mountain ->
             let noise = OpenSimplexNoise(param.seed)
             let variation = float(param.size.Y / 2)
-            for x = 0 to param.size.X - 1  do
+            for x = 0 to param.size.X - 2  do
                 let nv = abs(int(noise.Evaluate(float(x) / 20.0, 0.0) * variation))
                 let start = (param.size.Y - 2) - nv
                 for y = start to param.size.Y - 1 do
                     let index = (y * param.size.X) + x
                     let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
                     Array.set blocks index (Some(block))
+
+            for y = 0 to param.size.Y - 1 do
+                let index = (y * param.size.X) + param.size.X - 1
+                let block = { tileType = 55; coordinates = (param.size.X - 1, y); color = Color.DarkGreen; collisionAction = NextLevel }
+                Array.set blocks index (Some(block))
         | Underground ->
             let lastRow = (param.size.Y - 1) * param.size.X
             for x = 0 to param.size.X - 1 do
@@ -46,7 +52,7 @@ let createPlayer (map: Map) =
     { position = map.startingPoint.ToVector2(); size = Vector2(float32(tileSize)); velocity = Vector2(0.0f, 0.0f) }
 
 let defaultLevel = 
-    let map = generateLevel ({ size = Point(200, 40); seed = 12L; levelType = Underground })
+    let map = generateLevel ({ size = Point(200, 40); seed = 12L; levelType = Mountain })
     { map = map; player = createPlayer map }
 
 let getBlock (map: Map) (x: int) (y: int) =

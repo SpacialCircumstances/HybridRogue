@@ -18,7 +18,10 @@ let emptyPlayer = { name = "TestDummy"; level = 1 }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
-type CollisionAction = Move of Vector2 * Vector2
+type PostCollisionAction = 
+    | Move of Vector2 * Vector2
+    | NextLevel
+
 
 type GameState = 
         | MenuState
@@ -86,6 +89,8 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                                                 else
                                                     (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
                     Move(finalPos, finalVel)
+                | CollisionAction.NextLevel -> NextLevel
+
    
 let isOnFloor map pos =
     let (x, y, b) = blockAt map pos
@@ -107,6 +112,9 @@ let updatePlayerAndCamera (map: JumpAndRun.Map) (player: LevelPlayer) (camera: C
                 let newCamera = { scale = camera.scale; position = pos }
                 let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 (newPlayer, newCamera)
+            | NextLevel ->
+                printfn "Reached end of level"
+                (player, camera)
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
