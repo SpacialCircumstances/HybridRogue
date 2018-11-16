@@ -60,6 +60,8 @@ let generateLevel (param: LevelParams) =
         | Underground ->
             let lastRow = (param.size.Y - 1) * param.size.X
             for x = 0 to param.size.X - 1 do
+                let ceiling = { tileType = 54; coordinates = (x, 0); color = Color.White; collisionAction = Stop }
+                Array.set blocks x (Some(ceiling))
                 let block = { tileType = 54; coordinates = (x, param.size.Y - 1); color = Color.White; collisionAction = Stop }
                 Array.set blocks (x + lastRow) (Some(block))
 
