@@ -7,7 +7,11 @@ type CollisionAction =
     | Stop
     | NextLevel
 
-type LevelType = Underground | Mountain
+type MountainLevelSettings = { waterLevel: int }
+
+type LevelType = 
+    | Underground 
+    | Mountain of MountainLevelSettings
 
 type Block = { tileType: int; coordinates: int * int; color: Color; collisionAction: CollisionAction }
 
@@ -31,7 +35,8 @@ let generateLevel (param: LevelParams) =
     let mapSize = param.size.X * param.size.Y
     let blocks: Block option array = [| for i in 0..(mapSize - 1) -> None |]
     match param.levelType with
-        | Mountain ->
+        | Mountain mountainSettings ->
+            let waterLevel = param.size.Y - mountainSettings.waterLevel
             let noise = OpenSimplexNoise(param.seed)
             let variation = float(param.size.Y / 2)
             for x = 0 to param.size.X - 2  do
@@ -43,6 +48,10 @@ let generateLevel (param: LevelParams) =
                     let index = (y * param.size.X) + x
                     let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
                     Array.set blocks index (Some(block))
+                for yw = waterLevel to start do
+                    let index = (yw * param.size.X) + x
+                    let waterBlock = { tileType = 46; coordinates = (x, yw); color = Color.Blue; collisionAction = Stop }
+                    Array.set blocks index (Some(waterBlock))
 
             for y = 0 to param.size.Y - 1 do
                 let index = (y * param.size.X) + param.size.X - 1
