@@ -114,8 +114,10 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
     let player = levelState.level.player
     let map = levelState.level.map
     let camera = levelState.camera
-    let playerCenter = player.position + (player.size / 2.0f)
-    let onFloor = isOnFloor map playerCenter
+    let onFloor = isOnFloor map (player.position) ||
+                  isOnFloor map (player.position + player.size) ||
+                  isOnFloor map (Vector2(player.position.X, player.position.Y + player.size.Y)) ||
+                  isOnFloor map (Vector2(player.position.X + player.size.X, player.position.Y))
     let playerVelocity = match event with
                             | Some event ->
                                 calculateVelocity player.velocity event onFloor
