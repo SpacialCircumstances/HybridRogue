@@ -72,7 +72,7 @@ let generateLevel (param: LevelParams) =
 let getBlock (map: Map) (x: int) (y: int) =
     let index = (map.sizeInTiles.X * y) + x
     if index > 0 && index < (Seq.length map.blocks) then
-        Seq.item index map.blocks
+        Array.item index map.blocks
     else
         None
 
