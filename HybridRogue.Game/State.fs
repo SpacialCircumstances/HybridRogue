@@ -14,7 +14,9 @@ let gravity = Vector2(0.0f, 0.12f)
 
 type Player = { name: string; level: int; levelQueue: LevelParams list }
 
-let defaultLevels = [ levelParams (Point(200, 40)) 15L (Mountain({ waterLevel = 5 })); levelParams (Point(100, 30)) 12L Underground ]
+let defaultLevels = [ 
+    //levelParams (Point(200, 40)) 15L (Mountain({ waterLevel = 5 }));
+    levelParams (Point(100, 30)) 12L (Underground({ depth = 5 })) ]
 
 let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels }
 

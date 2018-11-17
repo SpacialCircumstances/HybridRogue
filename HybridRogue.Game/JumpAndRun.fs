@@ -9,8 +9,10 @@ type CollisionAction =
 
 type MountainLevelSettings = { waterLevel: int }
 
+type UndergroundLevelSettings = { depth: int; }
+
 type LevelType = 
-    | Underground 
+    | Underground of UndergroundLevelSettings
     | Mountain of MountainLevelSettings
 
 type Block = { tileType: int; coordinates: int * int; color: Color; collisionAction: CollisionAction }
@@ -57,13 +59,15 @@ let generateLevel (param: LevelParams) =
                 let index = (y * param.size.X) + param.size.X - 1
                 let block = { tileType = 55; coordinates = (param.size.X - 1, y); color = Color.DarkGreen; collisionAction = NextLevel }
                 Array.set blocks index (Some(block))
-        | Underground ->
-            let lastRow = (param.size.Y - 1) * param.size.X
+        | Underground undergroundSettings ->
             for x = 0 to param.size.X - 1 do
                 let ceiling = { tileType = 54; coordinates = (x, 0); color = Color.White; collisionAction = Stop }
                 Array.set blocks x (Some(ceiling))
-                let block = { tileType = 54; coordinates = (x, param.size.Y - 1); color = Color.White; collisionAction = Stop }
-                Array.set blocks (x + lastRow) (Some(block))
+                let last = (param.size.Y - 1)
+                for y = (last - undergroundSettings.depth) + 1 to last do
+                    let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
+                    let index = (y * param.size.X) + x
+                    Array.set blocks index (Some(block))
 
     let map = { sizeInTiles = param.size; blocks = blocks; startingPoint = Point(0, 300); box = Rectangle(0, 0, param.size.X * tileSize, param.size.Y * tileSize) }
     let player = createPlayer map
