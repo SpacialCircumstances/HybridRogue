@@ -57,11 +57,12 @@ let velocityByPressedKeys (oldVel: Vector2) (keyboard: KeyboardState) =
         else
             Vector2(0.0f, oldVel.Y)
 
-let calculateVelocity (oldVel: Vector2) (event: InputEvent) =
+let calculateVelocity (oldVel: Vector2) (event: InputEvent) onFloor =
     match event with
         | Pressed key ->
             match key with
-                | Keys.Up -> Vector2(0.0f, -7.0f) + oldVel
+                | Keys.Up -> 
+                    if onFloor then Vector2(0.0f, -7.0f) + oldVel else velocityByPressedKeys oldVel (Keyboard.GetState())
                 | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
         | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
 
@@ -113,11 +114,12 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
     let player = levelState.level.player
     let map = levelState.level.map
     let camera = levelState.camera
+    let playerCenter = player.position + (player.size / 2.0f)
+    let onFloor = isOnFloor map playerCenter
     let playerVelocity = match event with
                             | Some event ->
-                                calculateVelocity player.velocity event
+                                calculateVelocity player.velocity event onFloor
                             | None -> player.velocity
-    let onFloor = isOnFloor map (player.position + (player.size / 2.0f))
     let unclampedVel = if onFloor then playerVelocity else playerVelocity + gravity
     let vel = Vector2(clampVelocity unclampedVel.X, clampVelocity unclampedVel.Y)
     let collisionAction = collisionCheck player.position player.size vel map
