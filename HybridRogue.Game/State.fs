@@ -12,13 +12,13 @@ open System
 
 let gravity = Vector2(0.0f, 0.12f)
 
-type Player = { name: string; level: int; levelQueue: LevelParams list }
+type Player = { name: string; level: int; levelQueue: LevelParams list; health: int }
 
 let defaultLevels = [ 
     //levelParams (Point(200, 40)) 15L (Mountain({ waterLevel = 5 }));
     levelParams (Point(100, 30)) 12L (Underground({ depth = 5 })) ]
 
-let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels }
+let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20 }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
@@ -188,6 +188,7 @@ let drawState (state: GameState) (graphics: GraphicsState) =
             drawPlayer graphics state.level.player
             batch.End()
             batch.Begin() //Draw gui
+            batch.DrawString(graphics.font, (sprintf "Health %i" state.player.health), Vector2(0.0f, 50.0f), Color.White)
             batch.DrawString(graphics.font, (sprintf "Level %i" state.player.level), Vector2(0.0f, 0.0f), Color.White)
             batch.End()
     ()
