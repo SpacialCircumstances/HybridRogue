@@ -12,13 +12,15 @@ open System
 
 let gravity = Vector2(0.0f, 0.12f)
 
-type Player = { name: string; level: int; levelQueue: LevelParams list; health: int }
+type Damage = { elapsed: TimeSpan; damagePerSecond: int }
+
+type Player = { name: string; level: int; levelQueue: LevelParams list; health: int; damage: Damage option }
 
 let defaultLevels = [ 
     //levelParams (Point(200, 40)) 15L (Mountain({ waterLevel = 5 }));
     levelParams (Point(100, 30)) 12L (Underground({ depth = 5 })) ]
 
-let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20 }
+let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20; damage = None }
 
 type LevelState = { level: Level; player: Player; camera: Camera }
 
@@ -112,7 +114,18 @@ let isOnFloor map pos =
         | None -> false
         | Some _ -> true
 
+let updatePlayerHealth player (time: GameTime) =
+    match player.damage with
+        | None -> player
+        | Some damage ->
+            let totalTime = damage.elapsed + time.ElapsedGameTime
+            let (newHealth, newDamage) = if totalTime.TotalSeconds > 1.0 then 
+                                                (player.health - damage.damagePerSecond,  {damage with elapsed = totalTime - TimeSpan(0, 0, 1) }) 
+                                         else (player.health, { damage with elapsed = totalTime })
+            { player with health = newHealth; damage = Some(newDamage) }
+
 let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
+    let gamePlayer = updatePlayerHealth levelState.player time
     let player = levelState.level.player
     let map = levelState.level.map
     let camera = levelState.camera
@@ -132,11 +145,12 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                 let newCamera = { scale = camera.scale; position = pos }
                 let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 let newLevel = { player = newPlayer; map = map }
-                { camera = newCamera; player = levelState.player; level = newLevel }
+                let newGPlayer = { gamePlayer with damage = None }
+                { camera = newCamera; player = newGPlayer; level = newLevel }
             | NextLevel ->
                 printfn "Reached end of level"
                 let newLevel = generateLevel levelState.player.levelQueue.Head
-                let newPlayer = { levelState.player with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail }
+                let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
                 { camera = defaultCamera; player = newPlayer; level = newLevel }
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
