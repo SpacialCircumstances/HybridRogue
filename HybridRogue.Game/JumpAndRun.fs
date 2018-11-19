@@ -6,7 +6,6 @@ open OpenSimplexNoise
 type CollisionAction = 
     | Stop
     | NextLevel
-    | Damage of int
 
 type StandingAction =
     | NoAction

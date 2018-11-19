@@ -27,7 +27,6 @@ type LevelState = { level: Level; player: Player; camera: Camera }
 
 type PostCollisionAction = 
     | Move of Vector2 * Vector2
-    | Damage of Vector2 * Vector2 * Damage
     | NextLevel
 
 
@@ -109,7 +108,6 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                                                     (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
                     match block.collisionAction with
                         | CollisionAction.Stop -> Move(finalPos, finalVel)
-                        | CollisionAction.Damage dmg -> Damage(finalPos, finalVel, { elapsed = TimeSpan(); damagePerSecond = dmg; countdown = 5 })
                         | _ -> raise (InvalidOperationException())
 
    
@@ -158,15 +156,6 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                 let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 let newLevel = { player = newPlayer; map = map }
                 { camera = newCamera; player = gamePlayer; level = newLevel }
-            | Damage (pos, vel, dmg) ->
-                let newCamera = { scale = camera.scale; position = pos }
-                let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
-                let newLevel = { player = newPlayer; map = map }
-                let newDamage = match gamePlayer.damage with
-                                | None -> Some(dmg)
-                                | Some d -> Some(d)
-                let newGPlayer = { gamePlayer with damage = newDamage }
-                { camera = newCamera; player = newGPlayer; level = newLevel }
             | NextLevel ->
                 printfn "Reached end of level"
                 let newLevel = generateLevel levelState.player.levelQueue.Head
