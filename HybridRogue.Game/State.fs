@@ -215,7 +215,10 @@ let drawState (state: GameState) (graphics: GraphicsState) =
             drawPlayer graphics state.level.player
             batch.End()
             batch.Begin() //Draw gui
-            batch.DrawString(graphics.font, (sprintf "Health %i" state.player.health), Vector2(0.0f, 50.0f), Color.White)
+            let healthColor = match state.player.damage with
+                                    | None -> Color.White
+                                    | Some _ -> Color.Red
+            batch.DrawString(graphics.font, (sprintf "Health %i" state.player.health), Vector2(0.0f, 50.0f), healthColor)
             batch.DrawString(graphics.font, (sprintf "Level %i" state.player.level), Vector2(0.0f, 0.0f), Color.White)
             batch.End()
     ()
