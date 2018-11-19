@@ -26,6 +26,7 @@ type LevelState = { level: Level; player: Player; camera: Camera }
 
 type PostCollisionAction = 
     | Move of Vector2 * Vector2
+    | Damage of Vector2 * Vector2 * Damage
     | NextLevel
 
 
@@ -94,7 +95,8 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
         | None -> Move(newPos, velocity)
         | Some block ->
             match block.collisionAction with
-                | Stop ->
+                | CollisionAction.NextLevel -> NextLevel
+                | _ ->
                     let xd = abs(x2 - x1)
                     let yd = abs(y2 - y1)
                     let (finalVel, finalPos) = if xd >= 1 then
@@ -104,8 +106,10 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                                                         (emptyVec, position)
                                                 else
                                                     (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
-                    Move(finalPos, finalVel)
-                | CollisionAction.NextLevel -> NextLevel
+                    match block.collisionAction with
+                        | CollisionAction.Stop -> Move(finalPos, finalVel)
+                        | CollisionAction.Damage dmg -> Damage(finalPos, finalVel, { elapsed = TimeSpan(); damagePerSecond = dmg })
+                        | _ -> raise (InvalidOperationException())
 
    
 let isOnFloor map pos =
@@ -145,7 +149,15 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                 let newCamera = { scale = camera.scale; position = pos }
                 let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 let newLevel = { player = newPlayer; map = map }
-                let newGPlayer = { gamePlayer with damage = None }
+                { camera = newCamera; player = gamePlayer; level = newLevel }
+            | Damage (pos, vel, dmg) ->
+                let newCamera = { scale = camera.scale; position = pos }
+                let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
+                let newLevel = { player = newPlayer; map = map }
+                let newDamage = match gamePlayer.damage with
+                                | None -> Some(dmg)
+                                | Some d -> Some(d)
+                let newGPlayer = { gamePlayer with damage = newDamage }
                 { camera = newCamera; player = newGPlayer; level = newLevel }
             | NextLevel ->
                 printfn "Reached end of level"

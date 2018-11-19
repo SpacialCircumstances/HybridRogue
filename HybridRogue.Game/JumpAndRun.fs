@@ -6,6 +6,7 @@ open OpenSimplexNoise
 type CollisionAction = 
     | Stop
     | NextLevel
+    | Damage of int
 
 type MountainLevelSettings = { waterLevel: int }
 
@@ -68,7 +69,7 @@ let generateLevel (param: LevelParams) =
                 let blockValue = noise.Evaluate(float(x) / 5.0, 0.0)
                 let createBlock x y =
                     if blockValue > undergroundSettings.lavaTreshold then
-                        { tileType = 46; coordinates = (x, y); color = Color.DarkOrange; collisionAction = Stop }
+                        { tileType = 46; coordinates = (x, y); color = Color.DarkOrange; collisionAction = Damage(1) }
                     else
                         { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
                 for y = (last - undergroundSettings.depth) + 1 to last do
