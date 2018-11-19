@@ -9,6 +9,7 @@ open Camera
 open Microsoft.Xna.Framework.Graphics
 open HybridRogue.Game
 open System
+open HybridRogue.Game
 
 let gravity = Vector2(0.0f, 0.12f)
 
@@ -112,13 +113,19 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                         | _ -> raise (InvalidOperationException())
 
    
-let isOnFloor map pos =
+let getTileBelow (map: Map) (pos: Vector2) =
     let (x, y, b) = blockAt map pos
-    match getBlock map x (y + 1) with
-        | None -> false
-        | Some _ -> true
+    getBlock map x (y + 1)
 
-let updatePlayerHealth player (time: GameTime) =
+let getFloor (map: Map) (pos: Vector2) (size: Vector2) =
+    OperationCombinators.orElse {
+        return! getTileBelow map pos
+        return! getTileBelow map (pos + size)
+        return! getTileBelow map (Vector2(pos.X, pos.Y + size.Y))
+        return! getTileBelow map (Vector2(pos.X + size.X, pos.Y))
+    }
+
+let updatePlayerHealth (player: Player) (time: GameTime) =
     match player.damage with
         | None -> player
         | Some damage ->
@@ -134,10 +141,10 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
     let player = levelState.level.player
     let map = levelState.level.map
     let camera = levelState.camera
-    let onFloor = isOnFloor map (player.position) ||
-                  isOnFloor map (player.position + player.size) ||
-                  isOnFloor map (Vector2(player.position.X, player.position.Y + player.size.Y)) ||
-                  isOnFloor map (Vector2(player.position.X + player.size.X, player.position.Y))
+    let floorTile = getFloor map player.position player.size
+    let onFloor = match floorTile with
+                    | None -> false
+                    | Some _ -> true
     let playerVelocity = match event with
                             | Some event ->
                                 calculateVelocity player.velocity event onFloor
