@@ -8,6 +8,10 @@ type CollisionAction =
     | NextLevel
     | Damage of int
 
+type StandingAction =
+    | NoAction
+    | Damage of int * int
+
 type MountainLevelSettings = { waterLevel: int }
 
 type UndergroundLevelSettings = { depth: int; lavaTreshold: float }
@@ -16,7 +20,7 @@ type LevelType =
     | Underground of UndergroundLevelSettings
     | Mountain of MountainLevelSettings
 
-type Block = { tileType: int; coordinates: int * int; color: Color; collisionAction: CollisionAction }
+type Block = { tileType: int; coordinates: int * int; color: Color; collisionAction: CollisionAction; standOnAction: StandingAction }
 
 type Map = { sizeInTiles: Point; blocks: Block option array; startingPoint: Point; box: Rectangle }
 
@@ -45,33 +49,33 @@ let generateLevel (param: LevelParams) =
             for x = 0 to param.size.X - 2  do
                 let nv = abs(int(noise.Evaluate(float(x) / 20.0, 0.0) * variation))
                 let start = (param.size.Y - 2) - nv
-                let sky = { tileType = 50; coordinates = (x, 0); color = Color.SkyBlue; collisionAction = Stop }
+                let sky = { tileType = 50; coordinates = (x, 0); color = Color.SkyBlue; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                 Array.set blocks x (Some(sky))
                 for y = start to param.size.Y - 1 do
                     let index = (y * param.size.X) + x
-                    let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
+                    let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                     Array.set blocks index (Some(block))
                 for yw = waterLevel to start do
                     let index = (yw * param.size.X) + x
-                    let waterBlock = { tileType = 46; coordinates = (x, yw); color = Color.Blue; collisionAction = Stop }
+                    let waterBlock = { tileType = 46; coordinates = (x, yw); color = Color.Blue; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                     Array.set blocks index (Some(waterBlock))
 
             for y = 0 to param.size.Y - 1 do
                 let index = (y * param.size.X) + param.size.X - 1
-                let block = { tileType = 55; coordinates = (param.size.X - 1, y); color = Color.DarkGreen; collisionAction = NextLevel }
+                let block = { tileType = 55; coordinates = (param.size.X - 1, y); color = Color.DarkGreen; collisionAction = NextLevel; standOnAction = StandingAction.NoAction }
                 Array.set blocks index (Some(block))
         | Underground undergroundSettings ->
             let noise = OpenSimplexNoise(param.seed)
             for x = 0 to param.size.X - 1 do
-                let ceiling = { tileType = 54; coordinates = (x, 0); color = Color.White; collisionAction = Stop }
+                let ceiling = { tileType = 54; coordinates = (x, 0); color = Color.White; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                 Array.set blocks x (Some(ceiling))
                 let last = (param.size.Y - 1)
                 let blockValue = noise.Evaluate(float(x) / 5.0, 0.0)
                 let createBlock x y =
                     if blockValue > undergroundSettings.lavaTreshold then
-                        { tileType = 46; coordinates = (x, y); color = Color.DarkOrange; collisionAction = Damage(1) }
+                        { tileType = 46; coordinates = (x, y); color = Color.DarkOrange; collisionAction = Stop; standOnAction = StandingAction.Damage(2, 5) }
                     else
-                        { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
+                        { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                 for y = (last - undergroundSettings.depth) + 1 to last do
                     let block = createBlock x y
                     let index = (y * param.size.X) + x
