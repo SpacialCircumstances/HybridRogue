@@ -12,7 +12,7 @@ open System
 
 let gravity = Vector2(0.0f, 0.12f)
 
-type Damage = { elapsed: TimeSpan; damagePerSecond: int }
+type Damage = { elapsed: TimeSpan; damagePerSecond: int; countdown: int }
 
 type Player = { name: string; level: int; levelQueue: LevelParams list; health: int; damage: Damage option }
 
@@ -108,7 +108,7 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                                                     (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
                     match block.collisionAction with
                         | CollisionAction.Stop -> Move(finalPos, finalVel)
-                        | CollisionAction.Damage dmg -> Damage(finalPos, finalVel, { elapsed = TimeSpan(); damagePerSecond = dmg })
+                        | CollisionAction.Damage dmg -> Damage(finalPos, finalVel, { elapsed = TimeSpan(); damagePerSecond = dmg; countdown = 5 })
                         | _ -> raise (InvalidOperationException())
 
    
@@ -124,9 +124,10 @@ let updatePlayerHealth player (time: GameTime) =
         | Some damage ->
             let totalTime = damage.elapsed + time.ElapsedGameTime
             let (newHealth, newDamage) = if totalTime.TotalSeconds > 1.0 then 
-                                                (player.health - damage.damagePerSecond,  {damage with elapsed = totalTime - TimeSpan(0, 0, 1) }) 
-                                         else (player.health, { damage with elapsed = totalTime })
-            { player with health = newHealth; damage = Some(newDamage) }
+                                                (player.health - damage.damagePerSecond,  if damage.countdown = 0 then None else
+                                                                                            Some({ damage with countdown = damage.countdown - 1; elapsed = totalTime - TimeSpan(0, 0, 1) }))
+                                         else (player.health, Some({ damage with elapsed = totalTime }))
+            { player with health = newHealth; damage = newDamage }
 
 let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
     let gamePlayer = updatePlayerHealth levelState.player time
