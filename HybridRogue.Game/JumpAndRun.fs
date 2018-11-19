@@ -9,7 +9,7 @@ type CollisionAction =
 
 type MountainLevelSettings = { waterLevel: int }
 
-type UndergroundLevelSettings = { depth: int; }
+type UndergroundLevelSettings = { depth: int; lavaTreshold: float }
 
 type LevelType = 
     | Underground of UndergroundLevelSettings
@@ -60,12 +60,19 @@ let generateLevel (param: LevelParams) =
                 let block = { tileType = 55; coordinates = (param.size.X - 1, y); color = Color.DarkGreen; collisionAction = NextLevel }
                 Array.set blocks index (Some(block))
         | Underground undergroundSettings ->
+            let noise = OpenSimplexNoise(param.seed)
             for x = 0 to param.size.X - 1 do
                 let ceiling = { tileType = 54; coordinates = (x, 0); color = Color.White; collisionAction = Stop }
                 Array.set blocks x (Some(ceiling))
                 let last = (param.size.Y - 1)
+                let blockValue = noise.Evaluate(float(x) / 5.0, 0.0)
+                let createBlock x y =
+                    if blockValue > undergroundSettings.lavaTreshold then
+                        { tileType = 46; coordinates = (x, y); color = Color.DarkOrange; collisionAction = Stop }
+                    else
+                        { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
                 for y = (last - undergroundSettings.depth) + 1 to last do
-                    let block = { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop }
+                    let block = createBlock x y
                     let index = (y * param.size.X) + x
                     Array.set blocks index (Some(block))
 

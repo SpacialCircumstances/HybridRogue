@@ -18,7 +18,7 @@ type Player = { name: string; level: int; levelQueue: LevelParams list; health: 
 
 let defaultLevels = [ 
     //levelParams (Point(200, 40)) 15L (Mountain({ waterLevel = 5 }));
-    levelParams (Point(100, 30)) 12L (Underground({ depth = 5 })) ]
+    levelParams (Point(100, 30)) 12L (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
 
 let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20; damage = None }
 
