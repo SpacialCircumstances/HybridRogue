@@ -96,7 +96,7 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
         | Some block ->
             match block.collisionAction with
                 | CollisionAction.NextLevel -> NextLevel
-                | _ ->
+                | CollisionAction.Stop ->
                     let xd = abs(x2 - x1)
                     let yd = abs(y2 - y1)
                     let (finalVel, finalPos) = if xd >= 1 then
@@ -106,9 +106,7 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
                                                         (emptyVec, position)
                                                 else
                                                     (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
-                    match block.collisionAction with
-                        | CollisionAction.Stop -> Move(finalPos, finalVel)
-                        | _ -> raise (InvalidOperationException())
+                    Move(finalPos, finalVel)
 
    
 let getTileBelow (map: Map) (pos: Vector2) =
@@ -123,19 +121,34 @@ let getFloor (map: Map) (pos: Vector2) (size: Vector2) =
         return! getTileBelow map (Vector2(pos.X + size.X, pos.Y))
     }
 
-let updatePlayerHealth (player: Player) (time: GameTime) =
-    match player.damage with
-        | None -> player
-        | Some damage ->
-            let totalTime = damage.elapsed + time.ElapsedGameTime
-            let (newHealth, newDamage) = if totalTime.TotalSeconds > 1.0 then 
-                                                (player.health - damage.damagePerSecond,  if damage.countdown = 0 then None else
-                                                                                            Some({ damage with countdown = damage.countdown - 1; elapsed = totalTime - TimeSpan(0, 0, 1) }))
-                                         else (player.health, Some({ damage with elapsed = totalTime }))
-            { player with health = newHealth; damage = newDamage }
+let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time: GameTime) =
+    match standingAction with
+        | NoAction ->
+            match player.damage with
+                | None -> player
+                | Some damage ->
+                    let totalTime = damage.elapsed + time.ElapsedGameTime
+                    let (newHealth, newDamage) = if totalTime.TotalSeconds > 1.0 then 
+                                                        (player.health - damage.damagePerSecond,  if damage.countdown = 0 then None else
+                                                                                                    Some({ damage with countdown = damage.countdown - 1; elapsed = totalTime - TimeSpan(0, 0, 1) }))
+                                                 else (player.health, Some({ damage with elapsed = totalTime }))
+                    { player with health = newHealth; damage = newDamage }
+              
+        | StandingAction.Damage (perSec, duration) ->
+            match player.damage with
+                | None -> 
+                    let newDamage = { elapsed = TimeSpan(); damagePerSecond = perSec; countdown = duration }
+                    { player with damage = Some(newDamage) }
+                | Some dmg ->
+                    let totalTime = dmg.elapsed + time.ElapsedGameTime
+                    let (newHealth, newDamage) = if totalTime.TotalSeconds > 1.0 then
+                                                        (player.health - dmg.damagePerSecond, 
+                                                            { dmg with elapsed = totalTime - TimeSpan(0, 0, 1); countdown = max dmg.countdown duration; damagePerSecond = max dmg.damagePerSecond perSec })
+                                                    else (player.health, { dmg with elapsed = totalTime; countdown = max dmg.countdown duration; damagePerSecond = max dmg.damagePerSecond perSec })
+                                                        
+                    { player with damage = Some(newDamage) } 
 
 let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
-    let gamePlayer = updatePlayerHealth levelState.player time
     let player = levelState.level.player
     let map = levelState.level.map
     let camera = levelState.camera
@@ -149,6 +162,10 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                             | None -> player.velocity
     let unclampedVel = if onFloor then playerVelocity else playerVelocity + gravity
     let vel = Vector2(clampVelocity unclampedVel.X, clampVelocity unclampedVel.Y)
+    let standingAction = match floorTile with
+                            | None -> NoAction
+                            | Some tile -> tile.standOnAction
+    let gamePlayer = updatePlayerEffects levelState.player standingAction time
     let collisionAction = collisionCheck player.position player.size vel map
     match collisionAction with
             | Move (pos, vel) ->
