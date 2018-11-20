@@ -177,12 +177,15 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                 let newCamera = { scale = camera.scale; position = pos }
                 let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 let newLevel = { player = newPlayer; map = map }
-                { camera = newCamera; player = gamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime }
+                LevelState({ camera = newCamera; player = gamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
             | NextLevel ->
                 printfn "Reached end of level"
                 let newLevel = generateLevel levelState.player.levelQueue.Head
-                let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
-                { camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime }
+                if List.isEmpty levelState.player.levelQueue then
+                    EndScreen({ player = gamePlayer; totalTimePlayed = levelState.timePlayed + time.ElapsedGameTime; endState = GameFinished })
+                else
+                    let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
+                    LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
@@ -200,8 +203,7 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                                 state
                         | _ -> state
         | LevelState levelState ->
-            let newState = updateLevelState levelState event time
-            LevelState(newState)
+            updateLevelState levelState event time
         | EndScreen endScreenState -> EndScreen(endScreenState)
                     
 
