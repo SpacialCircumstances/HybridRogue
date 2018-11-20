@@ -162,7 +162,8 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                             | None -> player.velocity
     let unclampedVel = if onFloor then playerVelocity else playerVelocity + gravity
     let vel = Vector2(clampVelocity unclampedVel.X, clampVelocity unclampedVel.Y)
-    let standingAction = match floorTile with
+    let playerCenter = Vector2(player.position.X + (player.size.X / 2.0f), player.position.Y + (player.size.Y / 2.0f))
+    let standingAction = match (getTileBelow map playerCenter) with
                             | None -> NoAction
                             | Some tile -> tile.standOnAction
     let gamePlayer = updatePlayerEffects levelState.player standingAction time
