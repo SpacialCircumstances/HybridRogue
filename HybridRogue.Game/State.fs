@@ -23,16 +23,20 @@ let defaultLevels = [
 
 let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20; damage = None }
 
-type LevelState = { level: Level; player: Player; camera: Camera }
+type LevelState = { level: Level; player: Player; camera: Camera; timePlayed: TimeSpan }
 
 type PostCollisionAction = 
     | Move of Vector2 * Vector2
     | NextLevel
 
+type EndState = GameLost | GameFinished
+
+type GameEndState = { player: Player; totalTimePlayed: TimeSpan; endState: EndState }
 
 type GameState = 
         | MenuState
         | LevelState of LevelState
+        | EndScreen of GameEndState
 
 let initialGameState = MenuState
 
@@ -173,12 +177,12 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                 let newCamera = { scale = camera.scale; position = pos }
                 let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                 let newLevel = { player = newPlayer; map = map }
-                { camera = newCamera; player = gamePlayer; level = newLevel }
+                { camera = newCamera; player = gamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime }
             | NextLevel ->
                 printfn "Reached end of level"
                 let newLevel = generateLevel levelState.player.levelQueue.Head
                 let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
-                { camera = defaultCamera; player = newPlayer; level = newLevel }
+                { camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime }
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
@@ -191,13 +195,14 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                             if key = Keys.Enter then
                                 let player = emptyPlayer
                                 let level = generateLevel player.levelQueue.Head
-                                LevelState({ level =  level; player = { player with levelQueue = player.levelQueue.Tail }; camera = defaultCamera })
+                                LevelState({ level =  level; player = { player with levelQueue = player.levelQueue.Tail }; camera = defaultCamera; timePlayed = TimeSpan() })
                             else
                                 state
                         | _ -> state
         | LevelState levelState ->
             let newState = updateLevelState levelState event time
             LevelState(newState)
+        | EndScreen endScreenState -> EndScreen(endScreenState)
                     
 
 let drawPlayer (graphics: GraphicsState) (player: LevelPlayer) =
@@ -235,4 +240,6 @@ let drawState (state: GameState) (graphics: GraphicsState) =
             batch.DrawString(graphics.font, (sprintf "Health %i" state.player.health), Vector2(0.0f, 50.0f), healthColor)
             batch.DrawString(graphics.font, (sprintf "Level %i" state.player.level), Vector2(0.0f, 0.0f), Color.White)
             batch.End()
+        | EndScreen endScreenState ->
+            ()
     ()
