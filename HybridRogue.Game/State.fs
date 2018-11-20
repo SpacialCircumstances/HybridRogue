@@ -146,7 +146,7 @@ let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time:
                                                             { dmg with elapsed = totalTime - TimeSpan(0, 0, 1); countdown = max dmg.countdown duration; damagePerSecond = max dmg.damagePerSecond perSec })
                                                     else (player.health, { dmg with elapsed = totalTime; countdown = max dmg.countdown duration; damagePerSecond = max dmg.damagePerSecond perSec })
                                                         
-                    { player with damage = Some(newDamage) } 
+                    { player with damage = Some(newDamage); health = newHealth } 
 
 let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
     let player = levelState.level.player
