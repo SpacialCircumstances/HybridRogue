@@ -72,7 +72,7 @@ let generateLevel (param: LevelParams) =
                 let blockValue = noise.Evaluate(float(x) / 5.0, 0.0)
                 let createBlock x y =
                     if blockValue > undergroundSettings.lavaTreshold then
-                        { tileType = 46; coordinates = (x, y); color = Color.DarkOrange; collisionAction = Stop; standOnAction = StandingAction.Damage(2, 5) }
+                        { tileType = 46; coordinates = (x, y); color = Color.DarkOrange; collisionAction = Stop; standOnAction = StandingAction.Damage(1, 6) }
                     else
                         { tileType = 54; coordinates = (x, y); color = Color.White; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                 for y = (last - undergroundSettings.depth) + 1 to last do
