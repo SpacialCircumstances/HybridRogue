@@ -29,10 +29,10 @@ type Level = { map: Map; player: LevelPlayer }
 
 let tileSize = 16
 
-type LevelParams = { size: Point; seed: int64; levelType: LevelType }
+type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; levelType: LevelType }
 
-let levelParams (size: Point) (seed: int64) (levelType: LevelType) =
-    { size = size; seed = seed; levelType = levelType }
+let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (levelType: LevelType) =
+    { size = size; seed = seed; healthPickupPositions = healthPickupPositions; levelType = levelType }
 
 let createPlayer (map: Map) =
     { position = map.startingPoint.ToVector2(); size = Vector2(float32(tileSize)); velocity = Vector2(0.0f, 0.0f) }
@@ -58,6 +58,9 @@ let generateLevel (param: LevelParams) =
                     let index = (yw * param.size.X) + x
                     let waterBlock = { tileType = 46; coordinates = (x, yw); color = Color.Blue; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                     Array.set blocks index (Some(waterBlock))
+                if Seq.contains x param.healthPickupPositions then
+                    let pickup = { tileType = 10; coordinates = (x, start - 1); color = Color.Green; collisionAction = Stop; standOnAction = StandingAction.NoAction }
+                    Array.set blocks (((start - 1) * param.size.X) + x) (Some(pickup))
 
             for y = 0 to param.size.Y - 1 do
                 let index = (y * param.size.X) + param.size.X - 1
