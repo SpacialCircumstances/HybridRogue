@@ -11,15 +11,15 @@ open HybridRogue.Game
 open System
 open HybridRogue.Game
 
-let gravity = Vector2(0.0f, 0.12f)
+let gravity = Vector2(0.0f, 0.15f)
 
 type Damage = { elapsed: TimeSpan; damagePerSecond: int; countdown: int }
 
 type Player = { name: string; level: int; levelQueue: LevelParams list; health: int; damage: Damage option }
 
 let defaultLevels = [ 
-    levelParams (Point(200, 40)) 15L [10] (Mountain({ waterLevel = 5 }));
-    levelParams (Point(100, 30)) 12L [40; 60; 80] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
+    levelParams (Point(200, 40)) 15L [10] [20] (Mountain({ waterLevel = 5 }));
+    levelParams (Point(100, 30)) 12L [40; 60; 80] [] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
 
 let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20; damage = None }
 
@@ -107,9 +107,9 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
         | Some block ->
             match block.collisionAction with
                 | CollisionAction.AddItem item ->
-                    let changePlayer player = match item with
-                                                | Health health ->
-                                                    { player with health = player.health + health }
+                    let changePlayer (player: Player) = match item with
+                                                            | Health health ->
+                                                                { player with health = player.health + health }
                     let changeMap map = 
                         let (x, y) = block.coordinates
                         let index = (y * map.sizeInTiles.X) + x
@@ -198,14 +198,14 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                 | Move (pos, vel) ->
                     let newCamera = { scale = camera.scale; position = pos }
                     let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
-                    let newLevel = { player = newPlayer; map = map }
+                    let newLevel = { levelState.level with player = newPlayer }
                     LevelState({ camera = newCamera; player = gamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
                 | ChangePlayerAndMap (changePlayer, changeLevelPlayer, changeMap) ->
                     let newGamePlayer = changePlayer gamePlayer
                     let newLevelPlayer = changeLevelPlayer player
                     let newMap = changeMap map
                     let newCamera = { scale = camera.scale; position = newLevelPlayer.position }
-                    let newLevel = { player = newLevelPlayer; map = newMap }
+                    let newLevel = { levelState.level with player = newLevelPlayer; map = newMap }
                     LevelState({ camera = newCamera; player = newGamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
                 | NextLevel ->
                     printfn "Reached end of level"
@@ -251,6 +251,12 @@ let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
                 graphics.batch.Draw(texture, Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), System.Nullable(region), block.color)
     ) map                
 
+let drawEnemies (graphics: GraphicsState) (enemies: Enemy seq) =
+    let (tex, reg) = getTile graphics.tileset 9
+    for enemy in enemies do
+        let scale = enemy.size / float32(reg.Size.X)
+        graphics.batch.Draw(tex, enemy.position, System.Nullable(reg), Color.Red, 0.0f, emptyVec, scale, SpriteEffects.None, 0.0f)
+
 let drawState (state: GameState) (graphics: GraphicsState) =
     let batch = graphics.batch
     match state with
@@ -263,6 +269,7 @@ let drawState (state: GameState) (graphics: GraphicsState) =
             batch.Begin(transformMatrix = System.Nullable(transform)) //Draw level
             drawMap graphics state.level.map
             drawPlayer graphics state.level.player
+            drawEnemies graphics state.level.enemies
             batch.End()
             batch.Begin() //Draw gui
             let healthColor = match state.player.damage with

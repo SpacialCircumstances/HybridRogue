@@ -6,6 +6,11 @@ open OpenSimplexNoise
 type PickupItem =
     | Health of int
 
+type Enemy = { health: int; radius: float32; position: Vector2; size: Vector2 }
+
+let newEnemy health radius position size =
+    { health = health; radius = radius; position = position; size = size }
+
 type CollisionAction = 
     | Stop
     | NextLevel
@@ -29,14 +34,14 @@ type Map = { sizeInTiles: Point; blocks: Block option array; startingPoint: Poin
 
 type LevelPlayer = { position: Vector2; size: Vector2; velocity: Vector2 }
 
-type Level = { map: Map; player: LevelPlayer }
+type Level = { map: Map; player: LevelPlayer; enemies: Enemy seq }
 
 let tileSize = 16
 
-type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; levelType: LevelType }
+type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; levelType: LevelType; enemyPositions: int seq }
 
-let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (levelType: LevelType) =
-    { size = size; seed = seed; healthPickupPositions = healthPickupPositions; levelType = levelType }
+let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (enemies: int seq) (levelType: LevelType) =
+    { size = size; seed = seed; healthPickupPositions = healthPickupPositions; levelType = levelType; enemyPositions = enemies }
 
 let createPlayer (map: Map) =
     { position = map.startingPoint.ToVector2(); size = Vector2(float32(tileSize)); velocity = Vector2(0.0f, 0.0f) }
@@ -44,6 +49,7 @@ let createPlayer (map: Map) =
 let generateLevel (param: LevelParams) =
     let mapSize = param.size.X * param.size.Y
     let blocks: Block option array = [| for i in 0..(mapSize - 1) -> None |]
+    let mutable enemies = []
     match param.levelType with
         | Mountain mountainSettings ->
             let waterLevel = param.size.Y - mountainSettings.waterLevel
@@ -65,6 +71,9 @@ let generateLevel (param: LevelParams) =
                 if Seq.contains x param.healthPickupPositions then
                     let pickup = { tileType = 10; coordinates = (x, start - 1); color = Color.Green; collisionAction = AddItem(Health(5)); standOnAction = StandingAction.NoAction }
                     Array.set blocks (((start - 1) * param.size.X) + x) (Some(pickup))
+                if Seq.contains x param.enemyPositions then
+                    let enemy = { health = 10; radius = 5.0f; position = Vector2(float32(x), float32(start * tileSize)); size = Vector2(float32(tileSize)) }
+                    enemies <- enemy :: enemies
 
             for y = 0 to param.size.Y - 1 do
                 let index = (y * param.size.X) + param.size.X - 1
@@ -86,14 +95,17 @@ let generateLevel (param: LevelParams) =
                     let block = createBlock x y
                     let index = (y * param.size.X) + x
                     Array.set blocks index (Some(block))
+                let start = (last - undergroundSettings.depth) + 1
+                if Seq.contains x param.enemyPositions then
+                    let enemy = { health = 10; radius = 5.0f; position = Vector2(float32(x), float32(start * tileSize)); size = Vector2(float32(tileSize)) }
+                    enemies <- enemy :: enemies
                 if Seq.contains x param.healthPickupPositions then
-                    let start = (last - undergroundSettings.depth) + 1
                     let pickup = { tileType = 10; coordinates = (x, start - 1); color = Color.Green; collisionAction = AddItem(Health(5)); standOnAction = StandingAction.NoAction }
                     Array.set blocks (((start - 1) * param.size.X) + x) (Some(pickup))
 
     let map = { sizeInTiles = param.size; blocks = blocks; startingPoint = Point(0, 300); box = Rectangle(0, 0, param.size.X * tileSize, param.size.Y * tileSize) }
     let player = createPlayer map
-    { player = player; map = map }
+    { player = player; map = map; enemies = enemies }
 
 let getBlock (map: Map) (x: int) (y: int) =
     let index = (map.sizeInTiles.X * y) + x
