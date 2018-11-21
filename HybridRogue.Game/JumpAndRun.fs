@@ -87,7 +87,7 @@ let generateLevel (param: LevelParams) =
                     let index = (y * param.size.X) + x
                     Array.set blocks index (Some(block))
                 if Seq.contains x param.healthPickupPositions then
-                    let start = (last - undergroundSettings.depth)
+                    let start = (last - undergroundSettings.depth) + 1
                     let pickup = { tileType = 10; coordinates = (x, start - 1); color = Color.Green; collisionAction = AddItem(Health(5)); standOnAction = StandingAction.NoAction }
                     Array.set blocks (((start - 1) * param.size.X) + x) (Some(pickup))
 
