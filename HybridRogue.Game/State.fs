@@ -107,8 +107,15 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
         | Some block ->
             match block.collisionAction with
                 | CollisionAction.AddItem item ->
-                    let changePlayer player = player
-                    let changeMap map = map
+                    let changePlayer player = match item with
+                                                | Health health ->
+                                                    { player with health = player.health + health }
+                    let changeMap map = 
+                        let (x, y) = block.coordinates
+                        let index = (y * map.sizeInTiles.X) + x
+                        Array.set map.blocks index None
+                        map
+
                     let changeLevelPlayer player = player
                     ChangePlayerAndMap(changePlayer, changeLevelPlayer, changeMap)
                 | CollisionAction.NextLevel -> NextLevel
