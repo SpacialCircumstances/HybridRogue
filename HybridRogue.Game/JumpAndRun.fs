@@ -3,9 +3,13 @@
 open Microsoft.Xna.Framework
 open OpenSimplexNoise
 
+type PickupItem =
+    | Health of int
+
 type CollisionAction = 
     | Stop
     | NextLevel
+    | AddItem of PickupItem
 
 type StandingAction =
     | NoAction
@@ -59,7 +63,7 @@ let generateLevel (param: LevelParams) =
                     let waterBlock = { tileType = 46; coordinates = (x, yw); color = Color.Blue; collisionAction = Stop; standOnAction = StandingAction.NoAction }
                     Array.set blocks index (Some(waterBlock))
                 if Seq.contains x param.healthPickupPositions then
-                    let pickup = { tileType = 10; coordinates = (x, start - 1); color = Color.Green; collisionAction = Stop; standOnAction = StandingAction.NoAction }
+                    let pickup = { tileType = 10; coordinates = (x, start - 1); color = Color.Green; collisionAction = AddItem(Health(5)); standOnAction = StandingAction.NoAction }
                     Array.set blocks (((start - 1) * param.size.X) + x) (Some(pickup))
 
             for y = 0 to param.size.Y - 1 do
@@ -82,6 +86,10 @@ let generateLevel (param: LevelParams) =
                     let block = createBlock x y
                     let index = (y * param.size.X) + x
                     Array.set blocks index (Some(block))
+                if Seq.contains x param.healthPickupPositions then
+                    let start = (last - undergroundSettings.depth)
+                    let pickup = { tileType = 10; coordinates = (x, start - 1); color = Color.Green; collisionAction = AddItem(Health(5)); standOnAction = StandingAction.NoAction }
+                    Array.set blocks (((start - 1) * param.size.X) + x) (Some(pickup))
 
     let map = { sizeInTiles = param.size; blocks = blocks; startingPoint = Point(0, 300); box = Rectangle(0, 0, param.size.X * tileSize, param.size.Y * tileSize) }
     let player = createPlayer map

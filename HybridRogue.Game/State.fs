@@ -25,9 +25,16 @@ let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; h
 
 type LevelState = { level: Level; player: Player; camera: Camera; timePlayed: TimeSpan }
 
+type MapChanger = JumpAndRun.Map -> JumpAndRun.Map
+
+type LevelPlayerChanger = LevelPlayer -> LevelPlayer
+
+type PlayerChanger = Player -> Player
+
 type PostCollisionAction = 
     | Move of Vector2 * Vector2
     | NextLevel
+    | ChangePlayerAndMap of PlayerChanger * LevelPlayerChanger * MapChanger
 
 type EndState = GameLost | GameFinished
 
@@ -99,6 +106,11 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
         | None -> Move(newPos, velocity)
         | Some block ->
             match block.collisionAction with
+                | CollisionAction.AddItem item ->
+                    let changePlayer player = player
+                    let changeMap map = map
+                    let changeLevelPlayer player = player
+                    ChangePlayerAndMap(changePlayer, changeLevelPlayer, changeMap)
                 | CollisionAction.NextLevel -> NextLevel
                 | CollisionAction.Stop ->
                     let xd = abs(x2 - x1)
@@ -181,6 +193,13 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                     let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
                     let newLevel = { player = newPlayer; map = map }
                     LevelState({ camera = newCamera; player = gamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
+                | ChangePlayerAndMap (changePlayer, changeLevelPlayer, changeMap) ->
+                    let newGamePlayer = changePlayer gamePlayer
+                    let newLevelPlayer = changeLevelPlayer player
+                    let newMap = changeMap map
+                    let newCamera = { scale = camera.scale; position = newLevelPlayer.position }
+                    let newLevel = { player = newLevelPlayer; map = newMap }
+                    LevelState({ camera = newCamera; player = newGamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
                 | NextLevel ->
                     printfn "Reached end of level"
                     let newLevel = generateLevel levelState.player.levelQueue.Head
