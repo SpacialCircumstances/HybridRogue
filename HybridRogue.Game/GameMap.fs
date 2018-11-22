@@ -2,9 +2,21 @@
 
 open Microsoft.Xna.Framework
 
+type PickupItem =
+    | Health of int
+
+type CollisionAction = 
+    | Stop
+    | NextLevel
+    | AddItem of PickupItem
+
+type StandingAction =
+    | NoAction
+    | Damage of int * int
+
 type Enemy = { health: int; radius: float32; position: Vector2; size: Vector2 }
 
-type Block = { tileType: int; position: Vector2; size: int; color: Color }
+type Block = { tileType: int; position: Vector2; size: int; color: Color; collisionAction: CollisionAction; standingAction: StandingAction }
 
 type GameObject =
     | Block of Block
@@ -29,8 +41,9 @@ let removeObject (store: GameObjectStore) (obj: GameObject) =
 
 type BlockMap = { size: Point; tileSize: int; blocks: int array; store: GameObjectStore; box: Rectangle }
 
-let createBlockMap (size: Point) =
-    Array.create (size.X * size.Y) -1
+let createBlockMap (store: GameObjectStore) (size: Point) =
+    let blocks = Array.create (size.X * size.Y) -1
+    { size = size; tileSize = 16; blocks = blocks; store = store; box = Rectangle(Point(), size) }
 
 let retrieveObject (store: GameObjectStore) (index: int) = store.Item index
 
