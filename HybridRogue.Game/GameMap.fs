@@ -26,6 +26,7 @@ type GameObject =
 type GameObjectStore = ResizeArray<GameObject>
 
 let createGameObjectStore (initialSize: int): GameObjectStore =
+    //TODO: BETTER STORAGE
     ResizeArray(initialSize)
     
 let iterObjects (store: GameObjectStore) (iter: GameObject -> unit) =

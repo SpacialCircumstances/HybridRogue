@@ -55,7 +55,8 @@ let generateLevel (param: LevelParams) =
                 let start = last - undergroundSettings.depth
                 if Seq.contains x param.healthPickupPositions then
                     setBlock blockMap x start (createHealthPickup blockMap x start)
-                ()
+                //TODO: ENEMIES
         | Mountain mountainSettings ->
             ()
-    ()
+    let player = { position = Vector2(0.0f, 300.0f); size = Vector2(float32(blockMap.tileSize)); velocity = Vector2() }
+    { map = blockMap; objects = store; player = player; enemies = [] }
