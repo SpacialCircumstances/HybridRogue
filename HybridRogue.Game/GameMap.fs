@@ -16,7 +16,7 @@ type StandingAction =
 
 type Enemy = { health: int; radius: float32; position: Vector2; size: Vector2 }
 
-type Block = { tileType: int; position: Vector2; size: int; color: Color; collisionAction: CollisionAction; standingAction: StandingAction }
+type Block = { tileType: int; position: Vector2; color: Color; collisionAction: CollisionAction; standingAction: StandingAction }
 
 type GameObject =
     | Block of Block
@@ -47,6 +47,11 @@ let createBlockMap (store: GameObjectStore) (size: Point) =
 
 let retrieveObject (store: GameObjectStore) (index: int) = store.Item index
 
+let setBlock (map: BlockMap) (tileX: int) (tileY: int) (block: Block) =
+    let index = (map.size.X * tileY) + tileX
+    let objIndex = addObject map.store (Block(block))
+    Array.set map.blocks index objIndex
+
 let getBlock (map: BlockMap) (tileX: int) (tileY: int) =
     let index = (map.size.X * tileY) + tileX
     let item = Array.item index map.blocks
@@ -62,3 +67,6 @@ let blockAt (map: BlockMap) (pos: Vector2) =
         (tileX, tileY, getBlock map tileX tileY)
     else
         (-1, -1, NoObject)
+
+let blockPosition (map: BlockMap) (tileX: int) (tileY: int) =
+    (map.box.Location + Point(tileX * map.tileSize, tileY * map.tileSize)).ToVector2()

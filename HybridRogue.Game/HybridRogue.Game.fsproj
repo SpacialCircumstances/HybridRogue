@@ -46,6 +46,7 @@
     <Compile Include="OperationCombinators.fs" />
     <Compile Include="Camera.fs" />
     <Compile Include="GameMap.fs" />
+    <Compile Include="Level.fs" />
     <Compile Include="Graphics.fs" />
     <Compile Include="JumpAndRun.fs" />
     <Compile Include="Input.fs" />
