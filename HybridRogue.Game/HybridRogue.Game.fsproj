@@ -45,6 +45,7 @@
     <Content Include="packages.config" />
     <Compile Include="OperationCombinators.fs" />
     <Compile Include="Camera.fs" />
+    <Compile Include="GameMap.fs" />
     <Compile Include="Graphics.fs" />
     <Compile Include="JumpAndRun.fs" />
     <Compile Include="Input.fs" />
