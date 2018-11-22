@@ -34,11 +34,12 @@ let iterObjects (store: GameObjectStore) (iter: GameObject -> unit) =
 
 let addObject (store: GameObjectStore) (obj: GameObject) =
     store.Add(obj)
-    store.Count - 1
+    (store, store.Count - 1)
 
 let removeObject (store: GameObjectStore) (obj: GameObject) =
     let index = store.IndexOf(obj)
     store.Item index <- NoObject
+    store
 
 type BlockMap = { size: Point; tileSize: int; blocks: int array; store: GameObjectStore; box: Rectangle }
 
@@ -48,10 +49,16 @@ let createBlockMap (store: GameObjectStore) (size: Point) =
 
 let retrieveObject (store: GameObjectStore) (index: int) = store.Item index
 
+let removeBlock (map: BlockMap) (tileX: int) (tileY: int) =
+    //TODO: REMOVE FROM STORE?
+    Array.set map.blocks ((map.size.X * tileY) + tileX) -1
+    map
+
 let setBlock (map: BlockMap) (tileX: int) (tileY: int) (block: Block) =
     let index = (map.size.X * tileY) + tileX
-    let objIndex = addObject map.store (Block(block))
+    let (_, objIndex) = addObject map.store (Block(block))
     Array.set map.blocks index objIndex
+    map
 
 let getBlock (map: BlockMap) (tileX: int) (tileY: int) =
     let index = (map.size.X * tileY) + tileX
