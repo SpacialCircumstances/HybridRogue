@@ -220,7 +220,9 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                         let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
                         LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
 
-let updateLevel (level: Level) player camera input standingAction timePlayed =
+let dummyColl pos size vel map = (-1, -1, None)
+
+let updateLevel (level: Level) (player: Player) (camera: Camera) input standingAction timePlayed =
     let physicalPlayer = level.player
     let oldMap = level.map
     let onFloor = match (getFloor oldMap physicalPlayer.position physicalPlayer.size) with
@@ -229,7 +231,30 @@ let updateLevel (level: Level) player camera input standingAction timePlayed =
     let velocity = match input with
                         | Some input -> calculateVelocity onFloor physicalPlayer.velocity input
                         | None -> physicalPlayer.velocity
-    LevelState({ level = level; player = player; camera = camera; timePlayed = timePlayed })
+    let (oldx, oldy, _) = blockAt oldMap physicalPlayer.position
+    let (bx, by, blockHit) = dummyColl physicalPlayer.position physicalPlayer.size velocity oldMap
+    match blockHit with
+        | None -> LevelState({ level = level; player = player; camera = camera; timePlayed = timePlayed })
+        | Some block ->
+            match block.collisionAction with
+                | Stop ->
+                    let position = physicalPlayer.position
+                    let xd = abs(bx - oldx)
+                    let yd = abs(by - oldy)
+                    let newPos = position + velocity
+                    let (finalVel, finalPos) = if xd >= 1 then
+                                                    if yd = 0 then
+                                                        (Vector2(0.0f, velocity.Y), Vector2(position.X, newPos.Y))
+                                                    else
+                                                        (emptyVec, position)
+                                                else
+                                                    (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
+                    let newPhysicalPlayer = { physicalPlayer with position = finalPos; velocity = finalVel }
+                    let newCamera = { scale = camera.scale; position = newPhysicalPlayer.position }
+                    let newLevel = { level with player = newPhysicalPlayer }
+                    LevelState({ level = newLevel; player = player; camera = newCamera; timePlayed = timePlayed })
+                | AddItem item -> raise (NotImplementedException())
+                | CollisionAction.NextLevel -> raise (NotImplementedException())
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
