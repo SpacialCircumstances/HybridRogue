@@ -73,14 +73,16 @@ let velocityByPressedKeys (oldVel: Vector2) (keyboard: KeyboardState) =
         else
             Vector2(0.0f, oldVel.Y)
 
-let calculateVelocity (oldVel: Vector2) (event: InputEvent) onFloor =
-    match event with
-        | Pressed key ->
-            match key with
-                | Keys.Up -> 
-                    if onFloor then Vector2(0.0f, -7.0f) + oldVel else velocityByPressedKeys oldVel (Keyboard.GetState())
+let calculateVelocity onFloor (oldVel: Vector2) (event: InputEvent) =
+    let vel = match event with
+                | Pressed key ->
+                    match key with
+                        | Keys.Up -> 
+                            if onFloor then Vector2(0.0f, -7.0f) + oldVel else velocityByPressedKeys oldVel (Keyboard.GetState())
+                        | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
                 | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
-        | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
+    let unclamped = if onFloor then vel else vel + gravity
+    Vector2(clampVelocity unclamped.X, clampVelocity unclamped.Y)
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
     let blockAt = JumpAndRun.blockAt map
@@ -171,6 +173,8 @@ let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time:
                                                         
                     { player with damage = Some(newDamage); health = newHealth } 
 
+
+
 let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
     let player = levelState.level.player
     let map = levelState.level.map
@@ -181,7 +185,7 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                     | Some _ -> true
     let playerVelocity = match event with
                             | Some event ->
-                                calculateVelocity player.velocity event onFloor
+                                calculateVelocity onFloor player.velocity event
                             | None -> player.velocity
     let unclampedVel = if onFloor then playerVelocity else playerVelocity + gravity
     let vel = Vector2(clampVelocity unclampedVel.X, clampVelocity unclampedVel.Y)
@@ -216,6 +220,17 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                         let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
                         LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
 
+let updateLevel (level: Level) player camera input standingAction timePlayed =
+    let physicalPlayer = level.player
+    let oldMap = level.map
+    let onFloor = match (getFloor oldMap physicalPlayer.position physicalPlayer.size) with
+                    | None -> false
+                    | Some _ -> true
+    let velocity = match input with
+                        | Some input -> calculateVelocity onFloor physicalPlayer.velocity input
+                        | None -> physicalPlayer.velocity
+    LevelState({ level = level; player = player; camera = camera; timePlayed = timePlayed })
+
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
         | MenuState ->
@@ -232,7 +247,17 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
                                 state
                         | _ -> state
         | LevelState levelState ->
-            updateLevelState levelState event time
+            let player = levelState.level.player
+            let map = levelState.level.map
+            let playerCenter = Vector2(player.position.X + (player.size.X / 2.0f), player.position.Y + (player.size.Y / 2.0f))
+            let standingAction = match (getTileBelow map playerCenter) with
+                                    | None -> NoAction
+                                    | Some tile -> tile.standOnAction
+            let gamePlayer = updatePlayerEffects levelState.player standingAction time
+            if gamePlayer.health <= 0 then
+                EndScreen({ player = gamePlayer; totalTimePlayed = levelState.timePlayed + time.ElapsedGameTime; endState = GameLost })
+            else
+                updateLevel levelState.level gamePlayer levelState.camera event standingAction (levelState.timePlayed + time.ElapsedGameTime)
         | EndScreen endScreenState -> EndScreen(endScreenState)
                     
 
