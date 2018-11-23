@@ -25,17 +25,6 @@ let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; h
 
 type LevelState = { level: Level; player: Player; camera: Camera; timePlayed: TimeSpan }
 
-type MapChanger = JumpAndRun.Map -> JumpAndRun.Map
-
-type LevelPlayerChanger = LevelPlayer -> LevelPlayer
-
-type PlayerChanger = Player -> Player
-
-type PostCollisionAction = 
-    | Move of Vector2 * Vector2
-    | NextLevel
-    | ChangePlayerAndMap of PlayerChanger * LevelPlayerChanger * MapChanger
-
 type EndState = GameLost | GameFinished
 
 type GameEndState = { player: Player; totalTimePlayed: TimeSpan; endState: EndState }
@@ -73,7 +62,7 @@ let velocityByPressedKeys (oldVel: Vector2) (keyboard: KeyboardState) =
         else
             Vector2(0.0f, oldVel.Y)
 
-let calculateVelocity onFloor (oldVel: Vector2) (event: InputEvent) =
+let calculateVelocity (onFloor: bool) (oldVel: Vector2) (event: InputEvent) =
     let vel = match event with
                 | Pressed key ->
                     match key with
@@ -83,56 +72,6 @@ let calculateVelocity onFloor (oldVel: Vector2) (event: InputEvent) =
                 | _ -> velocityByPressedKeys oldVel (Keyboard.GetState())
     let unclamped = if onFloor then vel else vel + gravity
     Vector2(clampVelocity unclamped.X, clampVelocity unclamped.Y)
-
-let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: JumpAndRun.Map) =
-    let blockAt = JumpAndRun.blockAt map
-    let (x1, y1, _) = blockAt position
-    let newPos = position + velocity
-    let (x2, y2, newBlock) = 
-        let (x, y, b) = blockAt (newPos)
-        match b with
-            | Some _ -> (x, y, b)
-            | None ->
-                let (x, y, b) = blockAt (Vector2(newPos.X + size.X, newPos.Y))
-                match b with
-                    | Some _ -> (x - 1, y, b)
-                    | None ->
-                        let (x, y, b) = blockAt (Vector2(newPos.X, newPos.Y + size.Y))
-                        match b with
-                            | Some _ -> (x, y - 1, b)
-                            | None ->
-                                let (x, y, b) = blockAt (newPos + size)
-                                (x - 1, y - 1, b)
-                               
-    match newBlock with
-        | None -> Move(newPos, velocity)
-        | Some block ->
-            match block.collisionAction with
-                | CollisionAction.AddItem item ->
-                    let changePlayer (player: Player) = match item with
-                                                            | Health health ->
-                                                                { player with health = player.health + health }
-                    let changeMap map = 
-                        let (x, y) = block.coordinates
-                        let index = (y * map.sizeInTiles.X) + x
-                        Array.set map.blocks index None
-                        map
-
-                    let changeLevelPlayer player = player
-                    ChangePlayerAndMap(changePlayer, changeLevelPlayer, changeMap)
-                | CollisionAction.NextLevel -> NextLevel
-                | CollisionAction.Stop ->
-                    let xd = abs(x2 - x1)
-                    let yd = abs(y2 - y1)
-                    let (finalVel, finalPos) = if xd >= 1 then
-                                                    if yd = 0 then
-                                                        (Vector2(0.0f, velocity.Y), Vector2(position.X, newPos.Y))
-                                                    else
-                                                        (emptyVec, position)
-                                                else
-                                                    (Vector2(velocity.X, 0.0f), Vector2(newPos.X, position.Y))
-                    Move(finalPos, finalVel)
-
    
 let getTileBelow (map: Map) (pos: Vector2) =
     let (x, y, b) = blockAt map pos
@@ -175,7 +114,7 @@ let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time:
 
 
 
-let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
+(*let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
     let player = levelState.level.player
     let map = levelState.level.map
     let camera = levelState.camera
@@ -219,7 +158,7 @@ let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: 
                     else
                         let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
                         LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
-
+*)
 let dummyColl pos size vel map = (-1, -1, None)
 
 let updateLevel (level: Level) (player: Player) (camera: Camera) input standingAction timePlayed =
