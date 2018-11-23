@@ -60,3 +60,23 @@ let generateLevel (param: LevelParams) =
             ()
     let player = { position = Vector2(0.0f, 300.0f); size = Vector2(float32(blockMap.tileSize)); velocity = Vector2() }
     { map = blockMap; objects = store; player = player; enemies = [] }
+
+let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: BlockMap): (int * int * Block option) =
+    let blockAt = blockAt map
+    let newPos = position + velocity
+    let (x, y, b) = blockAt (newPos)
+    match b with
+        | Block block -> (x, y, Some(block))
+        | _ ->
+            let (x, y, b) = blockAt (Vector2(newPos.X + size.X, newPos.Y))
+            match b with
+                | Block block -> (x - 1, y, Some(block))
+                | _ ->
+                    let (x, y, b) = blockAt (Vector2(newPos.X, newPos.Y + size.Y))
+                    match b with
+                        | Block block -> (x, y - 1, Some(block))
+                        | _ ->
+                            let (x, y, b) = blockAt (newPos + size)
+                            match b with
+                                | Block block -> (x - 1, y - 1, Some(block))
+                                | _ -> (x - 1, y - 1, None)
