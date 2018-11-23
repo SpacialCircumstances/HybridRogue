@@ -171,11 +171,16 @@ let updateLevel (level: Level) (player: Player) (camera: Camera) input standingA
                     | Some _ -> true
     let velocity = match input with
                         | Some input -> calculateVelocity onFloor physicalPlayer.velocity input
-                        | None -> physicalPlayer.velocity
+                        | None -> if onFloor then physicalPlayer.velocity else physicalPlayer.velocity + gravity
     let (oldx, oldy, _) = blockAt oldMap physicalPlayer.position
     let (bx, by, blockHit) = dummyColl physicalPlayer.position physicalPlayer.size velocity oldMap
     match blockHit with
-        | None -> LevelState({ level = level; player = player; camera = camera; timePlayed = timePlayed })
+        | None -> 
+            let newPosition = physicalPlayer.position + velocity
+            let newPhysicalPlayer = { physicalPlayer with position = newPosition; velocity = velocity }
+            let newCamera = { scale = camera.scale; position = newPhysicalPlayer.position }
+            let newLevel = { level with player = newPhysicalPlayer }
+            LevelState({ level = newLevel; player = player; camera = newCamera; timePlayed = timePlayed })
         | Some block ->
             match block.collisionAction with
                 | Stop ->
