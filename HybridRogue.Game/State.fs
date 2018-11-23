@@ -18,7 +18,7 @@ type Damage = { elapsed: TimeSpan; damagePerSecond: int; countdown: int }
 type Player = { name: string; level: int; levelQueue: LevelParams list; health: int; damage: Damage option }
 
 let defaultLevels = [ 
-    levelParams (Point(200, 40)) 15L [10] [20] (Mountain({ waterLevel = 5 }));
+    //levelParams (Point(200, 40)) 15L [10] [20] (Mountain({ waterLevel = 5 }));
     levelParams (Point(100, 30)) 12L [40; 60; 80] [] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
 
 let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20; damage = None }
