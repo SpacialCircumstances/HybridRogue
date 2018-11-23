@@ -45,7 +45,8 @@ type BlockMap = { size: Point; tileSize: int; blocks: int array; store: GameObje
 
 let createBlockMap (store: GameObjectStore) (size: Point) =
     let blocks = Array.create (size.X * size.Y) -1
-    { size = size; tileSize = 16; blocks = blocks; store = store; box = Rectangle(Point(), size) }
+    let boxSize = Point(size.X * 16, size.Y * 16)
+    { size = size; tileSize = 16; blocks = blocks; store = store; box = Rectangle(Point(), boxSize) }
 
 let retrieveObject (store: GameObjectStore) (index: int) = store.Item index
 

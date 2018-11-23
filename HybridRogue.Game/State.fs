@@ -4,12 +4,12 @@ open HybridRogue.Game.Graphics
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
 open Input
-open JumpAndRun
+open GameMap
+open Level
 open Camera
 open Microsoft.Xna.Framework.Graphics
 open HybridRogue.Game
 open System
-open HybridRogue.Game
 
 let gravity = Vector2(0.0f, 0.15f)
 
@@ -73,11 +73,13 @@ let calculateVelocity (onFloor: bool) (oldVel: Vector2) (event: InputEvent) =
     let unclamped = if onFloor then vel else vel + gravity
     Vector2(clampVelocity unclamped.X, clampVelocity unclamped.Y)
    
-let getTileBelow (map: Map) (pos: Vector2) =
+let getTileBelow (map: BlockMap) (pos: Vector2) =
     let (x, y, b) = blockAt map pos
-    getBlock map x (y + 1)
+    match getBlock map x (y + 1) with
+        | Block block -> Some(block)
+        | _ -> None
 
-let getFloor (map: Map) (pos: Vector2) (size: Vector2) =
+let getFloor (map: BlockMap) (pos: Vector2) (size: Vector2) =
     OperationCombinators.orElse {
         return! getTileBelow map pos
         return! getTileBelow map (pos + size)
@@ -216,7 +218,7 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
             let playerCenter = Vector2(player.position.X + (player.size.X / 2.0f), player.position.Y + (player.size.Y / 2.0f))
             let standingAction = match (getTileBelow map playerCenter) with
                                     | None -> NoAction
-                                    | Some tile -> tile.standOnAction
+                                    | Some tile -> tile.standingAction
             let gamePlayer = updatePlayerEffects levelState.player standingAction time
             if gamePlayer.health <= 0 then
                 EndScreen({ player = gamePlayer; totalTimePlayed = levelState.timePlayed + time.ElapsedGameTime; endState = GameLost })
@@ -228,23 +230,17 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
 let drawPlayer (graphics: GraphicsState) (player: LevelPlayer) =
     let (texture, region) = getTile graphics.tileset 2
     let scale = player.size / float32(region.Size.X)
-    do graphics.batch.Draw(texture, player.position, System.Nullable(region), Color.Blue, 0.0f, emptyVec, scale, SpriteEffects.None, 0.0f)
+    do graphics.batch.Draw(texture, player.position, System.Nullable(region), Color.Blue, 0.0f, emptyVec, scale, SpriteEffects.None, 0.0f)             
 
-let drawMap (graphics: GraphicsState) (map: JumpAndRun.Map) =
-    mapIteri (fun x y block ->
-        match block with
-            | None -> ()
-            | Some block ->
+let drawObjects (graphics: GraphicsState) (objects: GameObjectStore) =
+    do iterObjects objects (fun o ->
+        match o with
+            | NoObject -> ()
+            | Enemy e -> ()
+            | Block block ->
                 let (texture, region) = getTile graphics.tileset block.tileType
-                let (x, y) = block.coordinates
-                graphics.batch.Draw(texture, Rectangle(x * tileSize, y * tileSize, tileSize, tileSize), System.Nullable(region), block.color)
-    ) map                
-
-let drawEnemies (graphics: GraphicsState) (enemies: Enemy seq) =
-    let (tex, reg) = getTile graphics.tileset 9
-    for enemy in enemies do
-        let scale = enemy.size / float32(reg.Size.X)
-        graphics.batch.Draw(tex, enemy.position, System.Nullable(reg), Color.Red, 0.0f, emptyVec, scale, SpriteEffects.None, 0.0f)
+                graphics.batch.Draw(texture, block.position, System.Nullable(region), block.color, 0.0f, emptyVec, Vector2(0.25f, 0.25f), SpriteEffects.None, 0.0f)
+    )
 
 let drawState (state: GameState) (graphics: GraphicsState) =
     let batch = graphics.batch
@@ -256,9 +252,8 @@ let drawState (state: GameState) (graphics: GraphicsState) =
         | LevelState state ->
             let transform = calculateTransform state.camera graphics.viewportSize
             batch.Begin(transformMatrix = System.Nullable(transform)) //Draw level
-            drawMap graphics state.level.map
+            drawObjects graphics state.level.objects
             drawPlayer graphics state.level.player
-            drawEnemies graphics state.level.enemies
             batch.End()
             batch.Begin() //Draw gui
             let healthColor = match state.player.damage with
