@@ -161,8 +161,6 @@ let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time:
                         let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
                         LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
 *)
-let dummyColl pos size vel map = (-1, -1, None)
-
 let updateLevel (level: Level) (player: Player) (camera: Camera) input standingAction timePlayed =
     let physicalPlayer = level.player
     let oldMap = level.map
@@ -173,7 +171,7 @@ let updateLevel (level: Level) (player: Player) (camera: Camera) input standingA
                         | Some input -> calculateVelocity onFloor physicalPlayer.velocity input
                         | None -> if onFloor then physicalPlayer.velocity else physicalPlayer.velocity + gravity
     let (oldx, oldy, _) = blockAt oldMap physicalPlayer.position
-    let (bx, by, blockHit) = dummyColl physicalPlayer.position physicalPlayer.size velocity oldMap
+    let (bx, by, blockHit) = collisionCheck physicalPlayer.position physicalPlayer.size velocity oldMap
     match blockHit with
         | None -> 
             let newPosition = physicalPlayer.position + velocity
