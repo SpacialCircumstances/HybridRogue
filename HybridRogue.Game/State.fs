@@ -198,7 +198,13 @@ let updateLevel (level: Level) (player: Player) (camera: Camera) input standingA
                     let newLevel = { level with player = newPhysicalPlayer }
                     LevelState({ level = newLevel; player = player; camera = newCamera; timePlayed = timePlayed })
                 | AddItem item -> raise (NotImplementedException())
-                | CollisionAction.NextLevel -> raise (NotImplementedException())
+                | CollisionAction.NextLevel -> 
+                    let newLevel = generateLevel player.levelQueue.Head
+                    if List.isEmpty player.levelQueue then
+                        EndScreen({ player = player; totalTimePlayed = timePlayed; endState = GameFinished })
+                    else
+                        let newPlayer = { player with level = player.level + 1; levelQueue = player.levelQueue.Tail; damage = None }
+                        LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = timePlayed })
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
