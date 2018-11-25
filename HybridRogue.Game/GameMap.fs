@@ -30,8 +30,17 @@ let iterObjects (store: GameObjectStore) (iter: GameObject -> unit) =
     for obj in store do iter obj
 
 let addObject (store: GameObjectStore) (obj: GameObject) =
-    store.Add(obj)
-    (store, store.Count - 1)
+    let newIndex = store.FindIndex(System.Predicate(fun g -> 
+        match g with
+            | NoObject -> true
+            | _ -> false
+    ))
+    if newIndex = -1 then
+        store.Add(obj)
+        (store, store.Count - 1)
+    else
+        store.Item newIndex <- obj
+        (store, newIndex)
 
 let removeObject (store: GameObjectStore) (obj: GameObject) =
     let index = store.IndexOf(obj)
