@@ -25,7 +25,7 @@ type LevelType =
 
 type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; activeObjects: ActiveObjectParam seq; levelType: LevelType }
 
-type Level = { map: BlockMap; objects: GameObjectStore; player: LevelPlayer }
+type Level = { map: BlockMap; objects: GameObjectStore; player: LevelPlayer; activeObjects: ActiveObjectHandle list }
 
 let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (activeObjects: ActiveObjectParam seq) (levelType: LevelType) =
     { size = size; seed = seed; healthPickupPositions = healthPickupPositions; activeObjects = activeObjects; levelType = levelType }
@@ -57,12 +57,24 @@ let createHealthPickup map x y =
     let pos = blockPosition map x y
     { tileType = 10; position = pos; color = Color.Green; collisionAction = AddItem(Health(5)); standingAction = StandingAction.NoAction }
 
+let createActiveObject param map x y =
+    { position = blockPosition map x y; tileType = 14; color = Color.White; radius = 25.0f; radiusEnterAction = Explosion(1); physics = Static }
+
 let generateLevel (param: LevelParams) =
     let store = createGameObjectStore (Seq.length param.healthPickupPositions + (param.size.X * param.size.Y) + 1) //Estimate size
     let blockMap = createBlockMap store param.size
+    let mutable aosInLevel: ActiveObjectHandle list = []
     let placeHealthPickup x y =
         if Seq.contains x param.healthPickupPositions then
             setBlock blockMap x y (createHealthPickup blockMap x y) |> ignore
+    let placeActiveObject (x: int) (y: int) =
+        let aoHere = Seq.tryFind (fun ao -> ao.tilePos = x) param.activeObjects
+        match aoHere with
+            | Some ao ->
+                let activeObject = ActiveObject(createActiveObject ao blockMap x y)
+                let (_, idx) = addObject store activeObject
+                aosInLevel <- idx :: aosInLevel
+            | None -> ()
     match param.levelType with
         | Underground undergroundSettings ->
             let noise = OpenSimplexNoise(param.seed)
@@ -76,6 +88,7 @@ let generateLevel (param: LevelParams) =
                     setBlock blockMap x y block |> ignore
                 let start = last - undergroundSettings.depth
                 placeHealthPickup x start
+                placeActiveObject x start
 
             let last = param.size.X - 1
             for y = 0 to param.size.Y - 1 do
@@ -93,13 +106,14 @@ let generateLevel (param: LevelParams) =
                 for y = waterLevel to start do
                     setBlock blockMap x y (createWaterBlock blockMap x y) |> ignore
                 placeHealthPickup x (start - 1)
+                placeActiveObject x (start - 1)
             
             let last = param.size.X - 1
             for y = 0 to param.size.Y - 1 do
                 setBlock blockMap last y (createNextLevelBlock blockMap last y) |> ignore
 
     let player = { position = Vector2(0.0f, 300.0f); size = Vector2(float32(blockMap.tileSize)); velocity = Vector2() }
-    { map = blockMap; objects = store; player = player }
+    { map = blockMap; objects = store; player = player; activeObjects = aosInLevel }
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: BlockMap): (int * int * Block option) =
     let blockAt = blockAt map
