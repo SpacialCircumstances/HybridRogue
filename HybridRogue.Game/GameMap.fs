@@ -14,10 +14,21 @@ type StandingAction =
     | NoAction
     | Damage of int * int
 
+type RadiusEnterAction =
+    | Explosion of int
+    | Poison of int * int
+
 type Block = { tileType: int; position: Vector2; color: Color; collisionAction: CollisionAction; standingAction: StandingAction }
+
+type ObjectPhysics = Static
+
+type ActiveObject = { position: Vector2; tileType: int; color: Color; radius: float32; radiusEnterAction: RadiusEnterAction; physics: ObjectPhysics }
+
+type ActiveObjectHandle = int
 
 type GameObject =
     | Block of Block
+    | ActiveObject of ActiveObject
     | NoObject
 
 type GameObjectStore = ResizeArray<GameObject>

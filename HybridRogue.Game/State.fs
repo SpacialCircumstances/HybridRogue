@@ -18,8 +18,8 @@ type Damage = { elapsed: TimeSpan; damagePerSecond: int; countdown: int }
 type Player = { name: string; level: int; levelQueue: LevelParams list; health: int; damage: Damage option }
 
 let defaultLevels = [ 
-    levelParams (Point(200, 40)) 15L [10] (Mountain({ waterLevel = 5 }));
-    levelParams (Point(100, 30)) 12L [40; 60; 80] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
+    levelParams (Point(200, 40)) 15L [10] [] (Mountain({ waterLevel = 5 }));
+    levelParams (Point(100, 30)) 12L [40; 60; 80] [] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
 
 let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20; damage = None }
 
@@ -210,6 +210,7 @@ let drawObjects (graphics: GraphicsState) (objects: GameObjectStore) =
     do iterObjects objects (fun o ->
         match o with
             | NoObject -> ()
+            | ActiveObject activeObject -> ()
             | Block block ->
                 let (texture, region) = getTile graphics.tileset block.tileType
                 graphics.batch.Draw(texture, block.position, System.Nullable(region), block.color, 0.0f, emptyVec, Vector2(0.25f, 0.25f), SpriteEffects.None, 0.0f)

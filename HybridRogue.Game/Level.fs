@@ -10,18 +10,25 @@ type UndergroundLevelSettings = { depth: int; lavaTreshold: float }
 
 type UndergroundBlockType = Lava | Ground
 
+type ActiveObjectType = Bomb | PoisonBomb
+
+type ActiveObjectParam = { tilePos: int; objectType: ActiveObjectType }
+
+let activeObjectParam (tilePos: int) (objectType: ActiveObjectType) =
+    { tilePos = tilePos; objectType = objectType }
+
 type LevelPlayer = { position: Vector2; size: Vector2; velocity: Vector2 }
 
 type LevelType = 
     | Underground of UndergroundLevelSettings
     | Mountain of MountainLevelSettings
 
-type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; levelType: LevelType }
+type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; activeObjects: ActiveObjectParam seq; levelType: LevelType }
 
 type Level = { map: BlockMap; objects: GameObjectStore; player: LevelPlayer }
 
-let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (levelType: LevelType) =
-    { size = size; seed = seed; healthPickupPositions = healthPickupPositions; levelType = levelType }
+let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (activeObjects: ActiveObjectParam seq) (levelType: LevelType) =
+    { size = size; seed = seed; healthPickupPositions = healthPickupPositions; activeObjects = activeObjects; levelType = levelType }
 
 let createNextLevelBlock map x y =
     { tileType = 55; position = blockPosition map x y; color = Color.Black; collisionAction = NextLevel; standingAction = NoAction }
