@@ -16,12 +16,12 @@ type LevelType =
     | Underground of UndergroundLevelSettings
     | Mountain of MountainLevelSettings
 
-type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; levelType: LevelType; enemyPositions: int seq }
+type LevelParams = { size: Point; seed: int64; healthPickupPositions: int seq; levelType: LevelType }
 
-type Level = { map: BlockMap; objects: GameObjectStore; player: LevelPlayer; enemies: Enemy seq }
+type Level = { map: BlockMap; objects: GameObjectStore; player: LevelPlayer }
 
-let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (enemies: int seq) (levelType: LevelType) =
-    { size = size; seed = seed; healthPickupPositions = healthPickupPositions; levelType = levelType; enemyPositions = enemies }
+let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (levelType: LevelType) =
+    { size = size; seed = seed; healthPickupPositions = healthPickupPositions; levelType = levelType }
 
 let createNextLevelBlock map x y =
     { tileType = 55; position = blockPosition map x y; color = Color.Black; collisionAction = NextLevel; standingAction = NoAction }
@@ -51,7 +51,7 @@ let createHealthPickup map x y =
     { tileType = 10; position = pos; color = Color.Green; collisionAction = AddItem(Health(5)); standingAction = StandingAction.NoAction }
 
 let generateLevel (param: LevelParams) =
-    let store = createGameObjectStore (Seq.length param.enemyPositions + Seq.length param.healthPickupPositions + (param.size.X * param.size.Y) + 1) //Estimate size
+    let store = createGameObjectStore (Seq.length param.healthPickupPositions + (param.size.X * param.size.Y) + 1) //Estimate size
     let blockMap = createBlockMap store param.size
     match param.levelType with
         | Underground undergroundSettings ->
@@ -92,7 +92,7 @@ let generateLevel (param: LevelParams) =
                 setBlock blockMap last y (createNextLevelBlock blockMap last y) |> ignore
 
     let player = { position = Vector2(0.0f, 300.0f); size = Vector2(float32(blockMap.tileSize)); velocity = Vector2() }
-    { map = blockMap; objects = store; player = player; enemies = [] }
+    { map = blockMap; objects = store; player = player }
 
 let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map: BlockMap): (int * int * Block option) =
     let blockAt = blockAt map

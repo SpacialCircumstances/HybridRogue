@@ -14,13 +14,10 @@ type StandingAction =
     | NoAction
     | Damage of int * int
 
-type Enemy = { health: int; radius: float32; position: Vector2; size: Vector2 }
-
 type Block = { tileType: int; position: Vector2; color: Color; collisionAction: CollisionAction; standingAction: StandingAction }
 
 type GameObject =
     | Block of Block
-    | Enemy of Enemy
     | NoObject
 
 type GameObjectStore = ResizeArray<GameObject>
