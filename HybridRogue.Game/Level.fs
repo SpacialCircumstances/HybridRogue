@@ -60,6 +60,9 @@ let createHealthPickup map x y =
 let generateLevel (param: LevelParams) =
     let store = createGameObjectStore (Seq.length param.healthPickupPositions + (param.size.X * param.size.Y) + 1) //Estimate size
     let blockMap = createBlockMap store param.size
+    let placeHealthPickup x y =
+        if Seq.contains x param.healthPickupPositions then
+            setBlock blockMap x y (createHealthPickup blockMap x y) |> ignore
     match param.levelType with
         | Underground undergroundSettings ->
             let noise = OpenSimplexNoise(param.seed)
@@ -72,9 +75,7 @@ let generateLevel (param: LevelParams) =
                     let block = createBlock x y
                     setBlock blockMap x y block |> ignore
                 let start = last - undergroundSettings.depth
-                if Seq.contains x param.healthPickupPositions then
-                    setBlock blockMap x start (createHealthPickup blockMap x start) |> ignore
-                //TODO: ENEMIES
+                placeHealthPickup x start
 
             let last = param.size.X - 1
             for y = 0 to param.size.Y - 1 do
@@ -91,8 +92,7 @@ let generateLevel (param: LevelParams) =
                     setBlock blockMap x y (createMountainBlock blockMap x y) |> ignore
                 for y = waterLevel to start do
                     setBlock blockMap x y (createWaterBlock blockMap x y) |> ignore
-                if Seq.contains x param.healthPickupPositions then
-                    setBlock blockMap x start (createHealthPickup blockMap x start) |> ignore
+                placeHealthPickup x (start - 1)
             
             let last = param.size.X - 1
             for y = 0 to param.size.Y - 1 do
