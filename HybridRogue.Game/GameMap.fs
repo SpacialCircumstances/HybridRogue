@@ -63,11 +63,14 @@ let setBlock (map: BlockMap) (tileX: int) (tileY: int) (block: Block) =
 
 let getBlock (map: BlockMap) (tileX: int) (tileY: int) =
     let index = (map.size.X * tileY) + tileX
-    let item = Array.item index map.blocks
-    if item = -1 then
-        NoObject
-    else
-        retrieveObject map.store item
+    let item = Array.tryItem index map.blocks
+    match item with
+        | None -> NoObject
+        | Some item ->
+            if item = -1 then
+                NoObject
+            else
+                retrieveObject map.store item
 
 let blockAt (map: BlockMap) (pos: Vector2) =
     if map.box.Contains(pos) then
