@@ -40,6 +40,7 @@ let emptyVec = Vector2(0.0f, 0.0f)
 
 let normalVel = 2.0f
 let maxVelC = 10.0f
+let maxHealth = 30
 
 let defaultCamera = createCamera (Vector2(0.0f, 300.0f)) 1.0f
 
@@ -47,6 +48,7 @@ let clamp minimum maximum value =
     max (min maximum value) minimum
 
 let clampVelocity = clamp -maxVelC maxVelC
+let clampHealth = clamp 0 maxHealth
 
 let velocityByPressedKeys (oldVel: Vector2) (keyboard: KeyboardState) =
     let lpressed = keyboard.IsKeyDown(Keys.Left)
@@ -161,6 +163,12 @@ let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time:
                         let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
                         LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
 *)
+
+let addItem (item: PickupItem) (player: Player) =
+    match item with
+        | Health h ->
+             { player with health = clampHealth (player.health + h) }
+
 let updateLevel (level: Level) (player: Player) (camera: Camera) input standingAction timePlayed =
     let physicalPlayer = level.player
     let oldMap = level.map
@@ -197,7 +205,11 @@ let updateLevel (level: Level) (player: Player) (camera: Camera) input standingA
                     let newCamera = { scale = camera.scale; position = newPhysicalPlayer.position }
                     let newLevel = { level with player = newPhysicalPlayer }
                     LevelState({ level = newLevel; player = player; camera = newCamera; timePlayed = timePlayed })
-                | AddItem item -> raise (NotImplementedException())
+                | AddItem item -> 
+                    let newPlayer = addItem item player
+                    let newMap = unsetBlock oldMap bx by
+                    let newLevel = { level with map = newMap }
+                    LevelState({ level = newLevel; player = newPlayer; camera = camera; timePlayed = timePlayed })
                 | CollisionAction.NextLevel -> 
                     let newLevel = generateLevel player.levelQueue.Head
                     if List.isEmpty player.levelQueue then

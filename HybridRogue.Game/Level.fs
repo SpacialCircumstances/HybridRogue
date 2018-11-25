@@ -70,13 +70,13 @@ let collisionCheck (position: Vector2) (size: Vector2) (velocity: Vector2) (map:
         | _ ->
             let (x, y, b) = blockAt (Vector2(newPos.X + size.X, newPos.Y))
             match b with
-                | Block block -> (x - 1, y, Some(block))
+                | Block block -> (x, y, Some(block))
                 | _ ->
                     let (x, y, b) = blockAt (Vector2(newPos.X, newPos.Y + size.Y))
                     match b with
-                        | Block block -> (x, y - 1, Some(block))
+                        | Block block -> (x, y, Some(block))
                         | _ ->
                             let (x, y, b) = blockAt (newPos + size)
                             match b with
-                                | Block block -> (x - 1, y - 1, Some(block))
-                                | _ -> (x - 1, y - 1, None)
+                                | Block block -> (x, y, Some(block))
+                                | _ -> (x, y, None)

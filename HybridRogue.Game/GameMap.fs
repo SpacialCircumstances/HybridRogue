@@ -50,10 +50,13 @@ let createBlockMap (store: GameObjectStore) (size: Point) =
 
 let retrieveObject (store: GameObjectStore) (index: int) = store.Item index
 
-let removeBlock (map: BlockMap) (tileX: int) (tileY: int) =
-    //TODO: REMOVE FROM STORE?
-    Array.set map.blocks ((map.size.X * tileY) + tileX) -1
+let unsetBlock (map: BlockMap) (tileX: int) (tileY: int) =
+    let index = (map.size.X * tileY) + tileX
+    let item = Array.get map.blocks index
+    map.store.Item item <- NoObject
+    Array.set map.blocks index -1
     map
+
 
 let setBlock (map: BlockMap) (tileX: int) (tileY: int) (block: Block) =
     let index = (map.size.X * tileY) + tileX
