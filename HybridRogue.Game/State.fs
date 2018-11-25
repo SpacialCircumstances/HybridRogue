@@ -116,54 +116,6 @@ let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time:
                                                         
                     { player with damage = Some(newDamage); health = newHealth } 
 
-
-
-(*let updateLevelState (levelState: LevelState) (event: InputEvent option) (time: GameTime) =
-    let player = levelState.level.player
-    let map = levelState.level.map
-    let camera = levelState.camera
-    let floorTile = getFloor map player.position player.size
-    let onFloor = match floorTile with
-                    | None -> false
-                    | Some _ -> true
-    let playerVelocity = match event with
-                            | Some event ->
-                                calculateVelocity onFloor player.velocity event
-                            | None -> player.velocity
-    let unclampedVel = if onFloor then playerVelocity else playerVelocity + gravity
-    let vel = Vector2(clampVelocity unclampedVel.X, clampVelocity unclampedVel.Y)
-    let playerCenter = Vector2(player.position.X + (player.size.X / 2.0f), player.position.Y + (player.size.Y / 2.0f))
-    let standingAction = match (getTileBelow map playerCenter) with
-                            | None -> NoAction
-                            | Some tile -> tile.standOnAction
-    let gamePlayer = updatePlayerEffects levelState.player standingAction time
-    if gamePlayer.health <= 0 then
-        EndScreen({ player = gamePlayer; totalTimePlayed = levelState.timePlayed + time.ElapsedGameTime; endState = GameLost })
-    else
-        let collisionAction = collisionCheck player.position player.size vel map
-        match collisionAction with
-                | Move (pos, vel) ->
-                    let newCamera = { scale = camera.scale; position = pos }
-                    let newPlayer: LevelPlayer = { position = pos; size = player.size; velocity = vel }
-                    let newLevel = { levelState.level with player = newPlayer }
-                    LevelState({ camera = newCamera; player = gamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
-                | ChangePlayerAndMap (changePlayer, changeLevelPlayer, changeMap) ->
-                    let newGamePlayer = changePlayer gamePlayer
-                    let newLevelPlayer = changeLevelPlayer player
-                    let newMap = changeMap map
-                    let newCamera = { scale = camera.scale; position = newLevelPlayer.position }
-                    let newLevel = { levelState.level with player = newLevelPlayer; map = newMap }
-                    LevelState({ camera = newCamera; player = newGamePlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
-                | NextLevel ->
-                    printfn "Reached end of level"
-                    let newLevel = generateLevel levelState.player.levelQueue.Head
-                    if List.isEmpty levelState.player.levelQueue then
-                        EndScreen({ player = gamePlayer; totalTimePlayed = levelState.timePlayed + time.ElapsedGameTime; endState = GameFinished })
-                    else
-                        let newPlayer = { gamePlayer with level = levelState.player.level + 1; levelQueue = levelState.player.levelQueue.Tail; damage = None }
-                        LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = levelState.timePlayed + time.ElapsedGameTime })
-*)
-
 let addItem (item: PickupItem) (player: Player) =
     match item with
         | Health h ->
