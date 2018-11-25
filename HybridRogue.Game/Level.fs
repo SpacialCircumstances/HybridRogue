@@ -30,19 +30,19 @@ type Level = { map: BlockMap; objects: GameObjectStore; player: LevelPlayer; act
 let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (activeObjects: ActiveObjectParam seq) (levelType: LevelType) =
     { size = size; seed = seed; healthPickupPositions = healthPickupPositions; activeObjects = activeObjects; levelType = levelType }
 
-let createNextLevelBlock map x y =
+let createNextLevelBlock (map: BlockMap) (x: int) (y: int) =
     { tileType = 55; position = blockPosition map x y; color = Color.Black; collisionAction = NextLevel; standingAction = NoAction }
 
-let createCeiling map x y =
+let createCeiling (map: BlockMap) (x: int) (y: int) =
     { tileType = 54; position = blockPosition map x y; color = Color.White; collisionAction = Stop; standingAction = StandingAction.NoAction }
 
-let createSky map x y =
+let createSky (map: BlockMap) (x: int) (y: int) =
     { tileType = 50; position = blockPosition map x y; color = Color.SkyBlue; collisionAction = Stop; standingAction = StandingAction.NoAction }
 
-let createMountainBlock map x y =
+let createMountainBlock (map: BlockMap) (x: int) (y: int) =
     { tileType = 54; position = blockPosition map x y; color = Color.White; collisionAction = Stop; standingAction = StandingAction.NoAction }
 
-let createWaterBlock map x y =
+let createWaterBlock (map: BlockMap) (x: int) (y: int) =
     { tileType = 46; position = blockPosition map x y; color = Color.Blue; collisionAction = Stop; standingAction = NoAction }
 
 let createUndergroundBlock (blockType: UndergroundBlockType) map x y =
@@ -53,11 +53,11 @@ let createUndergroundBlock (blockType: UndergroundBlockType) map x y =
         | Ground ->
             { tileType = 54; position = pos; color = Color.White; collisionAction = Stop; standingAction = StandingAction.NoAction }
 
-let createHealthPickup map x y =
+let createHealthPickup (map: BlockMap) (x: int) (y: int) =
     let pos = blockPosition map x y
     { tileType = 10; position = pos; color = Color.Green; collisionAction = AddItem(Health(5)); standingAction = StandingAction.NoAction }
 
-let createActiveObject param map x y =
+let createActiveObject (param: ActiveObjectParam) (map: BlockMap) (x: int) (y: int) =
     { position = blockPosition map x y; tileType = 14; color = Color.White; radius = 25.0f; radiusEnterAction = Explosion(1); physics = Static }
 
 let generateLevel (param: LevelParams) =
