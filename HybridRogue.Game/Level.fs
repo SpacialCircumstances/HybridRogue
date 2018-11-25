@@ -56,7 +56,7 @@ let generateLevel (param: LevelParams) =
     match param.levelType with
         | Underground undergroundSettings ->
             let noise = OpenSimplexNoise(param.seed)
-            for x = 0 to param.size.X - 1 do
+            for x = 0 to param.size.X - 2 do
                 let blockMap = setBlock blockMap x 0 (createCeiling blockMap x 0)
                 let blockType = if noise.Evaluate(float(x) / 5.0, 0.0) > undergroundSettings.lavaTreshold then Lava else Ground
                 let createBlock = createUndergroundBlock blockType blockMap
@@ -68,6 +68,10 @@ let generateLevel (param: LevelParams) =
                 if Seq.contains x param.healthPickupPositions then
                     setBlock blockMap x start (createHealthPickup blockMap x start) |> ignore
                 //TODO: ENEMIES
+
+            let last = param.size.X - 1
+            for y = 0 to param.size.Y - 1 do
+                setBlock blockMap last y (createNextLevelBlock blockMap last y) |> ignore
         | Mountain mountainSettings ->
             let noise = OpenSimplexNoise(param.seed)
             let waterLevel = param.size.Y - mountainSettings.waterLevel
