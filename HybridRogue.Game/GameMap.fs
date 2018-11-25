@@ -53,8 +53,7 @@ let addObject (store: GameObjectStore) (obj: GameObject) =
         store.Item newIndex <- obj
         (store, newIndex)
 
-let removeObject (store: GameObjectStore) (obj: GameObject) =
-    let index = store.IndexOf(obj)
+let removeObject (store: GameObjectStore) (index: int) =
     store.Item index <- NoObject
     store
 
@@ -70,7 +69,7 @@ let retrieveObject (store: GameObjectStore) (index: int) = store.Item index
 let unsetBlock (map: BlockMap) (tileX: int) (tileY: int) =
     let index = (map.size.X * tileY) + tileX
     let item = Array.get map.blocks index
-    map.store.Item item <- NoObject
+    removeObject map.store item |> ignore
     Array.set map.blocks index -1
     map
 
