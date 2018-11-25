@@ -23,8 +23,20 @@ type Level = { map: BlockMap; objects: GameObjectStore; player: LevelPlayer; ene
 let levelParams (size: Point) (seed: int64) (healthPickupPositions: int seq) (enemies: int seq) (levelType: LevelType) =
     { size = size; seed = seed; healthPickupPositions = healthPickupPositions; levelType = levelType; enemyPositions = enemies }
 
+let createNextLevelBlock map x y =
+    { tileType = 55; position = blockPosition map x y; color = Color.Black; collisionAction = NextLevel; standingAction = NoAction }
+
 let createCeiling map x y =
     { tileType = 54; position = blockPosition map x y; color = Color.White; collisionAction = Stop; standingAction = StandingAction.NoAction }
+
+let createSky map x y =
+    { tileType = 50; position = blockPosition map x y; color = Color.SkyBlue; collisionAction = Stop; standingAction = StandingAction.NoAction }
+
+let createMountainBlock map x y =
+    { tileType = 54; position = blockPosition map x y; color = Color.White; collisionAction = Stop; standingAction = StandingAction.NoAction }
+
+let createWaterBlock map x y =
+    { tileType = 46; position = blockPosition map x y; color = Color.Blue; collisionAction = Stop; standingAction = NoAction }
 
 let createUndergroundBlock (blockType: UndergroundBlockType) map x y =
     let pos = blockPosition map x y
@@ -57,7 +69,24 @@ let generateLevel (param: LevelParams) =
                     setBlock blockMap x start (createHealthPickup blockMap x start) |> ignore
                 //TODO: ENEMIES
         | Mountain mountainSettings ->
-            ()
+            let noise = OpenSimplexNoise(param.seed)
+            let waterLevel = param.size.Y - mountainSettings.waterLevel
+            let variation = float(param.size.Y / 2)
+            for x = 0 to param.size.X - 2 do
+                let blockMap = setBlock blockMap x 0 (createSky blockMap x 0)
+                let nv = abs(int(noise.Evaluate(float(x) / 20.0, 0.0) * variation))
+                let start = (param.size.Y - 2) - nv
+                for y = start to param.size.Y - 1 do
+                    setBlock blockMap x y (createMountainBlock blockMap x y) |> ignore
+                for y = waterLevel to start do
+                    setBlock blockMap x y (createWaterBlock blockMap x y) |> ignore
+                if Seq.contains x param.healthPickupPositions then
+                    setBlock blockMap x start (createHealthPickup blockMap x start) |> ignore
+            
+            let last = param.size.X - 1
+            for y = 0 to param.size.Y - 1 do
+                setBlock blockMap last y (createNextLevelBlock blockMap last y) |> ignore
+
     let player = { position = Vector2(0.0f, 300.0f); size = Vector2(float32(blockMap.tileSize)); velocity = Vector2() }
     { map = blockMap; objects = store; player = player; enemies = [] }
 
