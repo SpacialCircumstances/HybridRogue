@@ -211,12 +211,13 @@ let updateLevel (level: Level) (player: Player) (camera: Camera) input standingA
                     let newLevel = { level with map = newMap }
                     LevelState({ level = newLevel; player = newPlayer; camera = camera; timePlayed = timePlayed })
                 | CollisionAction.NextLevel -> 
-                    let newLevel = generateLevel player.levelQueue.Head
-                    if List.isEmpty player.levelQueue then
-                        EndScreen({ player = player; totalTimePlayed = timePlayed; endState = GameFinished })
-                    else
-                        let newPlayer = { player with level = player.level + 1; levelQueue = player.levelQueue.Tail; damage = None }
-                        LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = timePlayed })
+                    let next = List.tryHead player.levelQueue
+                    match next with
+                        | Some nextLevel ->
+                            let newLevel = generateLevel nextLevel
+                            let newPlayer = { player with level = player.level + 1; levelQueue = player.levelQueue.Tail; damage = None }
+                            LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = timePlayed })
+                        | None -> EndScreen({ player = player; totalTimePlayed = timePlayed; endState = GameFinished })
 
 let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
     match state with
