@@ -91,7 +91,20 @@ let getFloor (map: BlockMap) (pos: Vector2) (size: Vector2) =
         return! getTileBelow map (Vector2(pos.X + size.X, pos.Y))
     }
 
-let updatePlayerEffects (player: Player) (standingAction: StandingAction) (time: GameTime) =
+let updateActiveObjects (pos: Vector2) (aos: ActiveObjectHandle list) (getObject: ActiveObjectHandle -> GameObject) =
+    let nearPlayerHandle = List.tryFind (fun o -> true) aos
+    match nearPlayerHandle with
+        | Some handle -> let objectNearPlayer = match getObject handle with
+                                                    | ActiveObject ao -> ao
+                                                    | _ -> raise(InvalidOperationException())
+                         Some(objectNearPlayer.radiusEnterAction)
+        | None -> None
+
+let updatePlayer (player: Player) (levelPlayer: LevelPlayer) (standingAction: StandingAction) (activeObjects: ActiveObjectHandle list) (objects: GameObjectStore) (time: GameTime) =
+    let aoAction = updateActiveObjects levelPlayer.position activeObjects (retrieveObject objects)
+    let player = match aoAction with
+                    | None -> player
+                    | Some action -> player
     match standingAction with
         | NoAction ->
             match player.damage with
@@ -195,7 +208,7 @@ let updateState (state: GameState) (event: InputEvent option) (time: GameTime) =
             let standingAction = match (getTileBelow map playerCenter) with
                                     | None -> NoAction
                                     | Some tile -> tile.standingAction
-            let gamePlayer = updatePlayerEffects levelState.player standingAction time
+            let gamePlayer = updatePlayer levelState.player levelState.level.player standingAction levelState.level.activeObjects levelState.level.objects time
             if gamePlayer.health <= 0 then
                 EndScreen({ player = gamePlayer; totalTimePlayed = levelState.timePlayed + time.ElapsedGameTime; endState = GameLost })
             else
