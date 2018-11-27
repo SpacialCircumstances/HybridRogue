@@ -92,7 +92,11 @@ let getFloor (map: BlockMap) (pos: Vector2) (size: Vector2) =
     }
 
 let updateActiveObjects (pos: Vector2) (aos: ActiveObjectHandle list) (getObject: ActiveObjectHandle -> GameObject) =
-    let nearPlayerHandle = List.tryFind (fun o -> true) aos
+    let nearPlayerHandle = List.tryFind (fun o -> 
+        match getObject o with
+            | ActiveObject ao -> (pos - ao.position).Length() < ao.radius
+            | _ -> raise(InvalidOperationException())) aos
+
     match nearPlayerHandle with
         | Some handle -> let objectNearPlayer = match getObject handle with
                                                     | ActiveObject ao -> ao
