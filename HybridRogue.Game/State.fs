@@ -269,5 +269,12 @@ let drawState (state: GameState) (graphics: GraphicsState) =
             batch.DrawString(graphics.font, (sprintf "Level %i" state.player.level), Vector2(0.0f, 0.0f), Color.White)
             batch.End()
         | EndScreen endScreenState ->
-            ()
+            batch.Begin()
+            match endScreenState.endState with
+                | GameFinished -> batch.DrawString(graphics.font, "Game Won!", Vector2(), Color.Blue)
+                | GameLost -> batch.DrawString(graphics.font, "Game Over", Vector2(), Color.Red)
+            batch.DrawString(graphics.font, (sprintf "Player: %s" endScreenState.player.name), Vector2(0.0f, 50.0f), Color.White)
+            batch.DrawString(graphics.font, (sprintf "Level: %i" endScreenState.player.level), Vector2(0.0f, 100.0f), Color.White)
+            batch.DrawString(graphics.font, (sprintf "Time: %s" (endScreenState.totalTimePlayed.ToString())), Vector2(0.0f, 150.0f), Color.White)
+            batch.End()
     ()
