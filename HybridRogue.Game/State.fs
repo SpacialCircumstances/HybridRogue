@@ -93,22 +93,28 @@ let getFloor (map: BlockMap) (pos: Vector2) (size: Vector2) =
 
 let updateActiveObjects (pos: Vector2) (aos: ActiveObjectHandle list) (getObject: ActiveObjectHandle -> GameObject) =
     let nearPlayerHandle = List.tryFind (fun o -> 
-        match getObject o with
-            | ActiveObject ao -> (pos - ao.position).Length() < ao.radius
-            | _ -> raise(InvalidOperationException())) aos
+                                            match getObject o with
+                                                | ActiveObject ao -> (pos - ao.position).Length() < ao.radius
+                                                | _ -> false) aos
 
     match nearPlayerHandle with
         | Some handle -> let objectNearPlayer = match getObject handle with
                                                     | ActiveObject ao -> ao
                                                     | _ -> raise(InvalidOperationException())
-                         Some(objectNearPlayer.radiusEnterAction)
-        | None -> None
+                         (handle, Some(objectNearPlayer.radiusEnterAction))
+        | None -> (-1, None)
 
 let updatePlayer (player: Player) (levelPlayer: LevelPlayer) (standingAction: StandingAction) (activeObjects: ActiveObjectHandle list) (objects: GameObjectStore) (time: GameTime) =
-    let aoAction = updateActiveObjects levelPlayer.position activeObjects (retrieveObject objects)
+    let (aoHandle, aoAction) = updateActiveObjects levelPlayer.position activeObjects (retrieveObject objects)
     let player = match aoAction with
                     | None -> player
-                    | Some action -> player
+                    | Some action -> 
+                        removeObject objects aoHandle |> ignore //Very ugly solution because the ao is still present in the ao handle list
+                        match action with
+                            | Explosion dmg ->
+                                { player with health = player.health - dmg }
+                            | Poison (perSecond, duration) ->
+                                { player with damage = Some({ elapsed = TimeSpan(); damagePerSecond = perSecond; countdown = duration })}
     match standingAction with
         | NoAction ->
             match player.damage with
