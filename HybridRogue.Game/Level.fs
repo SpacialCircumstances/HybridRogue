@@ -61,9 +61,9 @@ let createActiveObject (param: ActiveObjectParam) (map: BlockMap) (x: int) (y: i
     let position = blockPosition map x y
     match param.objectType with
         | Bomb ->
-            { position = position; tileType = 48; color = Color.Red; radius = 25.0f; radiusEnterAction = Explosion(12); physics = Static }
+            { position = position; tileType = 48; color = Color.Red; radius = 40.0f; radiusEnterAction = Explosion(12); physics = Static }
         | PoisonBomb ->
-            { position = position; tileType = 48; color = Color.LightGreen; radius = 25.0f; radiusEnterAction = Poison(1, 10); physics = Static }
+            { position = position; tileType = 48; color = Color.LightGreen; radius = 50.0f; radiusEnterAction = Poison(1, 15); physics = Static }
 
 let generateLevel (param: LevelParams) =
     let store = createGameObjectStore (Seq.length param.healthPickupPositions + (param.size.X * param.size.Y) + 1) //Estimate size
