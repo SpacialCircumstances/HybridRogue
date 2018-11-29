@@ -110,8 +110,9 @@ let generateLevel (param: LevelParams) =
                     setBlock blockMap x y (createMountainBlock blockMap x y) |> ignore
                 for y = waterLevel to start do
                     setBlock blockMap x y (createWaterBlock blockMap x y) |> ignore
-                placeHealthPickup x (start - 1)
-                placeActiveObject x (start - 1)
+                let bottom = if start > waterLevel then waterLevel else start
+                placeHealthPickup x (bottom - 1)
+                placeActiveObject x (bottom - 1)
             
             let last = param.size.X - 1
             for y = 0 to param.size.Y - 1 do
