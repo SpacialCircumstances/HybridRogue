@@ -27,7 +27,7 @@ let defaultLevels = [
     ] (Mountain({ waterLevel = 5 }));
     levelParams (Point(100, 30)) (nextRandom ()) [40; 60; 80] [] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
 
-let emptyPlayer = { name = "TestDummy"; level = 1; levelQueue = defaultLevels; health = 20; damage = None }
+let emptyPlayer = { name = "Player"; level = 1; levelQueue = defaultLevels; health = 50; damage = None }
 
 type LevelState = { level: Level; player: Player; camera: Camera; timePlayed: TimeSpan }
 
@@ -46,7 +46,7 @@ let emptyVec = Vector2(0.0f, 0.0f)
 
 let normalVel = 2.0f
 let maxVelC = 10.0f
-let maxHealth = 30
+let maxHealth = 50
 
 let defaultCamera = createCamera (Vector2(0.0f, 300.0f)) 1.0f
 
