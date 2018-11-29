@@ -26,12 +26,21 @@ let defaultLevels = [
         activeObjectParam 40 Bomb;
         activeObjectParam 50 Bomb;
         activeObjectParam 60 Bomb;
-        activeObjectParam 65 Bomb;
+        activeObjectParam 67 Bomb;
         activeObjectParam 75 PoisonBomb;
         activeObjectParam 190 Bomb;
         activeObjectParam 210 Bomb;
         activeObjectParam 216 Bomb;
     ] (Mountain({ waterLevel = 4 }));
+    levelParams (Point(120, 40)) (nextRandom ()) [50; 60; 70; 110] [
+        activeObjectParam 15 PoisonBomb;
+        activeObjectParam 25 PoisonBomb;
+        activeObjectParam 30 Bomb;
+        activeObjectParam 65 PoisonBomb;
+        activeObjectParam 80 Bomb;
+        activeObjectParam 82 Bomb;
+        activeObjectParam 100 PoisonBomb;
+    ] (Mountain({ waterLevel = 5 }));
     levelParams (Point(100, 30)) (nextRandom ()) [40; 60; 80] [] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
 
 let emptyPlayer = { name = "Player"; level = 1; levelQueue = defaultLevels; health = 50; damage = None }
