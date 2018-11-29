@@ -22,9 +22,16 @@ let random = Random()
 let nextRandom () = int64(random.Next())
 
 let defaultLevels = [ 
-    levelParams (Point(200, 40)) (nextRandom ()) [10] [
-        activeObjectParam 40 Bomb
-    ] (Mountain({ waterLevel = 5 }));
+    levelParams (Point(250, 40)) (nextRandom ()) [10; 200] [
+        activeObjectParam 40 Bomb;
+        activeObjectParam 50 Bomb;
+        activeObjectParam 60 Bomb;
+        activeObjectParam 65 Bomb;
+        activeObjectParam 75 PoisonBomb;
+        activeObjectParam 190 Bomb;
+        activeObjectParam 210 Bomb;
+        activeObjectParam 216 Bomb;
+    ] (Mountain({ waterLevel = 4 }));
     levelParams (Point(100, 30)) (nextRandom ()) [40; 60; 80] [] (Underground({ depth = 5; lavaTreshold = 0.3 })) ]
 
 let emptyPlayer = { name = "Player"; level = 1; levelQueue = defaultLevels; health = 50; damage = None }
