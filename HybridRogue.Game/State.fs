@@ -229,7 +229,7 @@ let updateLevel (level: Level) (player: Player) (camera: Camera) input standingA
                     match next with
                         | Some nextLevel ->
                             let newLevel = generateLevel nextLevel
-                            let newPlayer = { player with level = player.level + 1; levelQueue = player.levelQueue.Tail; damage = None }
+                            let newPlayer = { player with level = player.level + 1; levelQueue = player.levelQueue.Tail }
                             LevelState({ camera = defaultCamera; player = newPlayer; level = newLevel; timePlayed = timePlayed })
                         | None -> EndScreen({ player = player; totalTimePlayed = timePlayed; endState = GameFinished })
 
