@@ -11,7 +11,7 @@ open Microsoft.Xna.Framework.Graphics
 open HybridRogue.Game
 open System
 
-let gravity = Vector2(0.0f, 0.15f)
+let gravity = Vector2(0.0f, 0.17f)
 
 type Damage = { elapsed: TimeSpan; damagePerSecond: int; countdown: int }
 
