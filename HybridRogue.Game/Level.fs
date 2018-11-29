@@ -49,7 +49,7 @@ let createUndergroundBlock (blockType: UndergroundBlockType) map x y =
     let pos = blockPosition map x y
     match blockType with
         | Lava ->
-            { tileType = 46; position = pos; color = Color.DarkOrange; collisionAction = Stop; standingAction = StandingAction.Damage(1, 6) }
+            { tileType = 46; position = pos; color = Color.DarkOrange; collisionAction = Stop; standingAction = StandingAction.Damage(2, 5) }
         | Ground ->
             { tileType = 54; position = pos; color = Color.White; collisionAction = Stop; standingAction = StandingAction.NoAction }
 
@@ -61,7 +61,7 @@ let createActiveObject (param: ActiveObjectParam) (map: BlockMap) (x: int) (y: i
     let position = blockPosition map x y
     match param.objectType with
         | Bomb ->
-            { position = position; tileType = 48; color = Color.Red; radius = 25.0f; radiusEnterAction = Explosion(1); physics = Static }
+            { position = position; tileType = 48; color = Color.Red; radius = 25.0f; radiusEnterAction = Explosion(12); physics = Static }
         | PoisonBomb ->
             { position = position; tileType = 48; color = Color.LightGreen; radius = 25.0f; radiusEnterAction = Poison(1, 10); physics = Static }
 
