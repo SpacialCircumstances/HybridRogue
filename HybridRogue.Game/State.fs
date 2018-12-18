@@ -11,7 +11,7 @@ open Microsoft.Xna.Framework.Graphics
 open HybridRogue.Game
 open System
 
-let gravity = Vector2(0.0f, 0.17f)
+let gravity = Vector2(0.0f, 0.16f)
 
 type Damage = { elapsed: TimeSpan; damagePerSecond: int; countdown: int }
 
@@ -37,7 +37,6 @@ let defaultLevels = [
         activeObjectParam 25 PoisonBomb;
         activeObjectParam 30 Bomb;
         activeObjectParam 65 PoisonBomb;
-        activeObjectParam 80 Bomb;
         activeObjectParam 82 Bomb;
         activeObjectParam 100 PoisonBomb;
     ] (Mountain({ waterLevel = 5 }));
@@ -51,7 +50,6 @@ let defaultLevels = [
     levelParams (Point(140, 40)) (nextRandom()) [100; 110; 120; 130] [
         activeObjectParam 20 Bomb;
         activeObjectParam 31 Bomb;
-        activeObjectParam 40 PoisonBomb;
         activeObjectParam 47 PoisonBomb;
         activeObjectParam 60 Bomb;
         activeObjectParam 69 Bomb;
@@ -78,7 +76,7 @@ let initialGameState = MenuState
 let emptyVec = Vector2(0.0f, 0.0f)
 
 let normalVel = 2.0f
-let maxVelC = 10.0f
+let maxVelC = 12.0f
 let maxHealth = 50
 
 let defaultCamera = createCamera (Vector2(0.0f, 300.0f)) 1.0f
